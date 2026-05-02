@@ -1,0 +1,52 @@
+Create a new page using the following structured JSON input.
+
+You must follow the structure exactly and generate a complete page based on it.
+
+---
+
+📦 INPUT FORMAT:
+
+{
+  "pageName": "{PAGE_NAME}",
+  "pageDescription": "{PAGE_DESCRIPTION}",
+  "pageDesign": {
+    "style": "{STYLE_OPTION}",
+    "colors": ["{COLOR_1}", "{COLOR_2}", "{COLOR_3}"]
+  },
+  "techStack": {
+    "frontend": "React.js",
+    "styling": "Tailwind CSS"
+  }
+}
+
+---
+
+📌 RULES:
+
+- pageName: Name of the page
+- pageDescription: Clear explanation of what the page does
+- pageDesign.style: Must be either "modern" or "realistic"
+- pageDesign.colors: Array of colors (hex codes or color names)
+- techStack.frontend: Always use React.js
+- techStack.styling: Always use Tailwind CSS
+
+---
+
+🎯 OUTPUT REQUIREMENTS:
+
+- Generate a fully working React component page
+- Use Tailwind CSS for all styling (no external CSS unless necessary)
+- Apply the selected design style consistently (modern or realistic)
+- Use the provided color palette throughout the UI
+- Ensure responsive design (mobile-first)
+- Keep code clean, reusable, and component-based
+- Follow React best practices (functional components, hooks if needed)
+
+---
+
+💡 OPTIONAL BEHAVIOR:
+
+- If any field is missing, assume sensible defaults:
+  - style → modern
+  - colors → blue, gray, white theme
+- Optimize UI for usability and clean design
