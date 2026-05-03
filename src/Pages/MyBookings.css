@@ -1,0 +1,107 @@
+.mb-page { min-height: 100vh; background: #f5f5f0; }
+
+.mb-nav {
+  background: white; border-bottom: 1px solid #e0e0dc;
+  padding: 12px 24px; display: flex;
+  align-items: center; justify-content: space-between;
+}
+.mb-logo { font-size: 18px; font-weight: 600; color: #1D9E75; }
+.mb-nav-links {
+  display: flex; gap: 20px;
+  font-size: 14px; color: #888;
+}
+.mb-nav-links span { cursor: pointer; }
+.mb-nav-links span:hover { color: #333; }
+.mb-nav-links span.active { color: #1D9E75; font-weight: 500; }
+.mb-logout:hover { color: #c00 !important; }
+
+.mb-content { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+
+.mb-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 24px;
+}
+.mb-stat {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 10px; padding: 14px; text-align: center;
+}
+.mb-stat-num { font-size: 24px; font-weight: 600; margin: 0 0 2px; color: #111; }
+.mb-stat-num.pending { color: #BA7517; }
+.mb-stat-num.approved { color: #0F6E56; }
+.mb-stat-label { font-size: 12px; color: #888; margin: 0; }
+
+.mb-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.mb-header h2 { font-size: 18px; font-weight: 600; margin: 0; }
+
+.mb-filters { display: flex; gap: 6px; }
+.mb-filters button {
+  padding: 5px 13px; border: 1px solid #e0e0dc;
+  border-radius: 20px; font-size: 12px; cursor: pointer;
+  background: white; color: #666;
+}
+.mb-filters button:hover { border-color: #1D9E75; color: #1D9E75; }
+.mb-filters button.active {
+  background: #1D9E75; color: white; border-color: #1D9E75;
+}
+
+.mb-card {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1.25rem;
+  margin-bottom: 12px; display: flex;
+  gap: 16px; align-items: flex-start;
+}
+.mb-card-icon {
+  width: 52px; height: 52px; background: #E1F5EE;
+  border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.mb-card-body { flex: 1; min-width: 0; }
+
+.mb-card-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px; margin-bottom: 4px;
+}
+.mb-card-title { font-size: 15px; font-weight: 500; margin: 0; }
+
+.mb-status {
+  font-size: 11px; padding: 3px 9px;
+  border-radius: 20px; font-weight: 500; flex-shrink: 0;
+}
+.mb-status.pending { background: #FAEEDA; color: #633806; }
+.mb-status.approved { background: #E1F5EE; color: #085041; }
+.mb-status.cancelled { background: #f0f0ec; color: #888; }
+
+.mb-card-city { font-size: 13px; color: #888; margin: 0 0 8px; }
+
+.mb-card-dates {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 13px; color: #666; margin-bottom: 10px;
+}
+
+.mb-card-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+.mb-total { font-size: 14px; font-weight: 600; color: #0F6E56; }
+.mb-ref { font-size: 11px; color: #aaa; font-family: monospace; }
+
+.mb-cancel-btn {
+  font-size: 12px; padding: 5px 12px;
+  border: 1px solid #fcc; border-radius: 6px;
+  background: transparent; color: #c00; cursor: pointer;
+}
+.mb-cancel-btn:hover { background: #fee; }
+
+.mb-empty {
+  text-align: center; padding: 3rem; color: #888;
+}
+.mb-empty p { margin: 0 0 1rem; font-size: 15px; }
+.mb-empty button {
+  padding: 9px 20px; background: #1D9E75;
+  border: none; border-radius: 8px;
+  color: white; font-size: 14px; cursor: pointer;
+}
+.mb-empty button:hover { background: #0F6E56; }

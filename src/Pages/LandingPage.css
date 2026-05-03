@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.lp-page {
+  min-height: 100vh;
+  background: #F0FAF5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.lp-card {
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(10, 61, 43, 0.08);
+}
+
+/* Logo */
+.lp-logo { text-align: center; margin-bottom: 1.75rem; }
+.lp-logo-text {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.lp-logo-sub { font-size: 13px; color: #6b9e84; margin-top: 3px; }
+
+/* Tabs */
+.lp-tabs {
+  display: flex;
+  background: #F0FAF5;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 30px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 1.5rem;
+}
+.lp-tabs button {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #6b9e84;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-font-smoothing: antialiased;
+}
+.lp-tabs button.active {
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  color: #ffffff !important;
+  box-shadow: 0 2px 0 #065f3a;
+}
+
+/* Labels & Inputs */
+form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b9e84;
+  margin-bottom: 5px;
+  margin-top: 14px;
+}
+form label:first-of-type { margin-top: 0; }
+
+form input,
+form select {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 30px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #0A3D2B;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-font-smoothing: antialiased;
+}
+form input:focus,
+form select:focus {
+  border-color: #1DB974;
+  box-shadow: 0 0 0 3px rgba(29, 185, 116, 0.15);
+}
+form input::placeholder { color: #9ec9b0; }
+
+/* Submit button */
+.lp-submit {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 13px;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border: none;
+  border-radius: 30px;
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #065f3a;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  letter-spacing: 0.2px;
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.1s;
+}
+.lp-submit:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+.lp-submit:active { transform: translateY(1px); box-shadow: 0 1px 0 #065f3a; }
+
+/* Messages */
+.lp-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #ee9b9b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.lp-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #d4f0e2;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.lp-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #9ec9b0;
+  margin-top: 14px;
+}

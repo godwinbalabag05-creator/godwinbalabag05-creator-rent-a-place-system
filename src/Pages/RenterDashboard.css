@@ -1,0 +1,123 @@
+.rd-page { min-height: 100vh; background: #f5f5f0; }
+
+.rd-nav {
+  background: white; border-bottom: 1px solid #e0e0dc;
+  padding: 12px 24px; display: flex;
+  align-items: center; justify-content: space-between;
+}
+.rd-logo { font-size: 18px; font-weight: 600; color: #1D9E75; }
+.rd-nav-links {
+  display: flex; gap: 20px;
+  font-size: 14px; color: #888;
+}
+.rd-nav-links span { cursor: pointer; }
+.rd-nav-links span:hover { color: #333; }
+.rd-nav-links span.active { color: #1D9E75; font-weight: 500; }
+.rd-logout:hover { color: #c00 !important; }
+
+.rd-content { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+.rd-welcome {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.rd-welcome-left h2 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+.rd-welcome-left p { font-size: 13px; color: #888; margin: 0; }
+.rd-welcome-right { display: flex; align-items: center; gap: 12px; }
+
+.rd-browse-btn {
+  padding: 8px 18px; background: #1D9E75;
+  border: none; border-radius: 8px;
+  color: white; font-size: 14px; cursor: pointer;
+}
+.rd-browse-btn:hover { background: #0F6E56; }
+
+.rd-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #E1F5EE; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 600; color: #085041;
+}
+
+.rd-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 24px;
+}
+@media (max-width: 600px) {
+  .rd-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.rd-stat {
+  background: #f5f5f0; border-radius: 10px; padding: 14px;
+}
+.rd-stat-label { font-size: 12px; color: #888; margin: 0 0 4px; }
+.rd-stat-num { font-size: 24px; font-weight: 600; color: #111; margin: 0; }
+.rd-stat-num.pending { color: #BA7517; }
+.rd-stat-num.approved { color: #0F6E56; }
+.rd-stat-num.spent { color: #534AB7; }
+
+.rd-section-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 12px;
+}
+.rd-section-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.rd-see-all { font-size: 13px; color: #1D9E75; cursor: pointer; }
+.rd-see-all:hover { text-decoration: underline; }
+
+.rd-bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+
+.rd-booking-card {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1rem;
+}
+.rd-booking-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px; margin-bottom: 4px;
+}
+.rd-booking-title { font-size: 14px; font-weight: 500; margin: 0; }
+.rd-status {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 20px; flex-shrink: 0;
+}
+.rd-status.pending { background: #FAEEDA; color: #633806; }
+.rd-status.approved { background: #E1F5EE; color: #085041; }
+.rd-status.cancelled { background: #f0f0ec; color: #888; }
+
+.rd-booking-city { font-size: 12px; color: #888; margin: 0 0 6px; }
+.rd-booking-dates { font-size: 12px; color: #666; margin: 0 0 8px; }
+.rd-booking-total { font-size: 13px; font-weight: 600; color: #0F6E56; margin: 0; }
+
+.rd-empty {
+  text-align: center; padding: 2.5rem;
+  color: #888; margin-bottom: 24px;
+}
+.rd-empty p { margin: 0 0 1rem; }
+.rd-empty button {
+  padding: 9px 20px; background: #1D9E75;
+  border: none; border-radius: 8px;
+  color: white; font-size: 14px; cursor: pointer;
+}
+
+.rd-quick-actions {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-top: 8px;
+}
+@media (max-width: 500px) {
+  .rd-quick-actions { grid-template-columns: 1fr; }
+}
+
+.rd-quick-card {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1.25rem;
+  text-align: center; cursor: pointer;
+}
+.rd-quick-card:hover { border-color: #1D9E75; }
+.rd-quick-icon { font-size: 24px; margin-bottom: 8px; }
+.rd-quick-label { font-size: 14px; font-weight: 500; margin: 0 0 4px; }
+.rd-quick-sub { font-size: 12px; color: #888; margin: 0; }

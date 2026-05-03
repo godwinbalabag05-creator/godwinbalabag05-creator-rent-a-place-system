@@ -1,0 +1,79 @@
+.pd-page { min-height: 100vh; background: #f5f5f0; }
+
+.pd-nav {
+  background: white;
+  border-bottom: 1px solid #e0e0dc;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pd-logo { font-size: 18px; font-weight: 600; color: #1D9E75; }
+.pd-back {
+  background: none; border: 1px solid #e0e0dc;
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 13px; cursor: pointer; color: #555;
+}
+.pd-back:hover { background: #f5f5f0; }
+
+.pd-content { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+.pd-hero {
+  height: 240px; background: #E1F5EE;
+  border-radius: 12px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 72px; margin-bottom: 1.5rem;
+  border: 1px solid #e0e0dc;
+}
+
+.pd-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .pd-body { grid-template-columns: 1fr; }
+}
+
+.pd-info {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1.5rem;
+}
+.pd-title { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.pd-city { font-size: 14px; color: #888; margin: 0 0 1rem; }
+
+.pd-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+.pd-tag { font-size: 12px; padding: 4px 10px; border-radius: 20px; background: #E1F5EE; color: #085041; }
+
+.pd-section-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .05em; margin: 1.25rem 0 6px; }
+.pd-desc { font-size: 14px; line-height: 1.7; color: #333; margin: 0; }
+
+.pd-book {
+  background: white; border: 1px solid #e0e0dc;
+  border-radius: 12px; padding: 1.5rem;
+  align-self: start;
+}
+.pd-price-big { font-size: 26px; font-weight: 700; color: #0F6E56; margin: 0 0 2px; }
+.pd-per { font-size: 13px; color: #888; margin: 0 0 1rem; }
+
+.pd-book label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; margin-top: 12px; }
+.pd-book input { width: 100%; padding: 8px 10px; border: 1px solid #e0e0dc; border-radius: 8px; font-size: 14px; }
+.pd-book input:focus { outline: none; border-color: #1D9E75; }
+
+.pd-divider { border: none; border-top: 1px solid #e0e0dc; margin: 1rem 0; }
+.pd-total-row { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 6px; }
+.pd-total-big { display: flex; justify-content: space-between; font-size: 16px; font-weight: 600; }
+
+.pd-btn {
+  width: 100%; margin-top: 1rem; padding: 12px;
+  background: #1D9E75; border: none; border-radius: 8px;
+  color: white; font-size: 15px; font-weight: 500; cursor: pointer;
+}
+.pd-btn:hover { background: #0F6E56; }
+
+.pd-not-found { text-align: center; padding: 3rem; color: #888; }
+.pd-not-found span { color: #1D9E75; cursor: pointer; text-decoration: underline; }
+.pd-nav-links { display: flex; gap: 20px; }
+.pd-nav-link { font-size: 14px; color: #888; cursor: pointer; }
+.pd-nav-link:hover { color: #1D9E75; }
