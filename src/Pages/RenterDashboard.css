@@ -1,123 +1,182 @@
-.rd-page { min-height: 100vh; background: #f5f5f0; }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+.rd-page {
+  min-height: 100vh;
+  background: #F0FAF5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Navbar ── */
 .rd-nav {
-  background: white; border-bottom: 1px solid #e0e0dc;
-  padding: 12px 24px; display: flex;
-  align-items: center; justify-content: space-between;
+  background: #0A3D2B;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
-.rd-logo { font-size: 18px; font-weight: 600; color: #1D9E75; }
-.rd-nav-links {
-  display: flex; gap: 20px;
-  font-size: 14px; color: #888;
+.rd-logo { color: #A8F0C6; font-size: 18px; font-weight: 700; }
+.rd-nav-links { display: flex; gap: 4px; }
+.rd-nav-btn {
+  background: none; border: none;
+  color: #7ecfaa; font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 7px 14px; border-radius: 30px;
+  transition: background .15s, color .15s;
+  -webkit-font-smoothing: antialiased;
 }
-.rd-nav-links span { cursor: pointer; }
-.rd-nav-links span:hover { color: #333; }
-.rd-nav-links span.active { color: #1D9E75; font-weight: 500; }
-.rd-logout:hover { color: #c00 !important; }
+.rd-nav-btn:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+.rd-nav-btn.active { background: rgba(168,240,198,0.15); color: #ffffff !important; font-weight: 600; }
+.rd-nav-btn.logout { color: #fca5a5 !important; }
+.rd-nav-btn.logout:hover { background: rgba(220,38,38,0.15) !important; color: #ffffff !important; }
 
-.rd-content { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+/* ── Content ── */
+.rd-content { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
 
-.rd-welcome {
-  background: white; border: 1px solid #e0e0dc;
-  border-radius: 12px; padding: 1.25rem 1.5rem;
+/* ── Banner ── */
+.rd-banner {
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border-radius: 16px; padding: 1.75rem 2rem;
   display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 16px;
+  justify-content: space-between; margin-bottom: 20px;
 }
-.rd-welcome-left h2 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
-.rd-welcome-left p { font-size: 13px; color: #888; margin: 0; }
-.rd-welcome-right { display: flex; align-items: center; gap: 12px; }
-
+.rd-banner h2 {
+  color: #ffffff; font-size: 22px; font-weight: 800;
+  margin-bottom: 4px; -webkit-font-smoothing: antialiased;
+}
+.rd-banner p { color: #d1fae5; font-size: 13px; font-weight: 500; }
+.rd-banner-right { display: flex; align-items: center; gap: 14px; }
 .rd-browse-btn {
-  padding: 8px 18px; background: #1D9E75;
-  border: none; border-radius: 8px;
-  color: white; font-size: 14px; cursor: pointer;
+  padding: 10px 22px; background: #ffffff; border: none;
+  border-radius: 30px; color: #0A7C52 !important;
+  font-size: 14px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+  -webkit-font-smoothing: antialiased; transition: background .15s;
 }
-.rd-browse-btn:hover { background: #0F6E56; }
-
+.rd-browse-btn:hover { background: #d1fae5; }
 .rd-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: #E1F5EE; display: flex;
-  align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 600; color: #085041;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-size: 16px; font-weight: 700;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── Stats ── */
 .rd-stats {
   display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 12px; margin-bottom: 24px;
+  gap: 12px; margin-bottom: 28px;
 }
-@media (max-width: 600px) {
-  .rd-stats { grid-template-columns: repeat(2, 1fr); }
-}
-
+@media (max-width: 600px) { .rd-stats { grid-template-columns: repeat(2, 1fr); } }
 .rd-stat {
-  background: #f5f5f0; border-radius: 10px; padding: 14px;
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
 }
-.rd-stat-label { font-size: 12px; color: #888; margin: 0 0 4px; }
-.rd-stat-num { font-size: 24px; font-weight: 600; color: #111; margin: 0; }
-.rd-stat-num.pending { color: #BA7517; }
-.rd-stat-num.approved { color: #0F6E56; }
-.rd-stat-num.spent { color: #534AB7; }
+.rd-stat-label {
+  font-size: 11px; font-weight: 700; color: #6b9e84;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;
+}
+.rd-stat-num {
+  font-size: 26px; font-weight: 800; color: #0A3D2B;
+  -webkit-font-smoothing: antialiased;
+}
+.rd-stat-num.pending  { color: #d97706; }
+.rd-stat-num.approved { color: #0A7C52; }
+.rd-stat-num.spent    { color: #534AB7; }
 
+/* ── Section header ── */
 .rd-section-header {
   display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 12px;
+  justify-content: space-between; margin-bottom: 14px;
 }
-.rd-section-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
-.rd-see-all { font-size: 13px; color: #1D9E75; cursor: pointer; }
+.rd-section-header h3 {
+  font-size: 16px; font-weight: 800; color: #0A3D2B;
+  -webkit-font-smoothing: antialiased;
+}
+.rd-see-all {
+  background: none; border: none; font-size: 13px;
+  font-weight: 600; color: #1DB974; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 .rd-see-all:hover { text-decoration: underline; }
 
+/* ── Bookings grid ── */
 .rd-bookings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px; margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px; margin-bottom: 28px;
 }
-
 .rd-booking-card {
-  background: white; border: 1px solid #e0e0dc;
-  border-radius: 12px; padding: 1rem;
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 1rem;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+  transition: border-color .15s;
 }
+.rd-booking-card:hover { border-color: #1DB974; }
 .rd-booking-top {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; gap: 8px; margin-bottom: 4px;
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 8px; margin-bottom: 4px;
 }
-.rd-booking-title { font-size: 14px; font-weight: 500; margin: 0; }
-.rd-status {
-  font-size: 11px; padding: 2px 8px;
-  border-radius: 20px; flex-shrink: 0;
+.rd-booking-title { font-size: 14px; font-weight: 700; color: #0A3D2B; }
+.rd-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 30px; flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
 }
-.rd-status.pending { background: #FAEEDA; color: #633806; }
-.rd-status.approved { background: #E1F5EE; color: #085041; }
-.rd-status.cancelled { background: #f0f0ec; color: #888; }
+.rd-badge.approved  { background: #d1fae5; color: #065f46; }
+.rd-badge.pending   { background: #fef3c7; color: #92400e; }
+.rd-badge.cancelled { background: #f5f5f0; color: #888; }
+.rd-booking-city   { font-size: 12px; color: #6b9e84; font-weight: 500; margin-bottom: 6px; }
+.rd-booking-dates  { font-size: 12px; color: #2d6a4f; font-weight: 500; margin-bottom: 8px; }
+.rd-booking-total  { font-size: 13px; font-weight: 700; color: #0A7C52; }
 
-.rd-booking-city { font-size: 12px; color: #888; margin: 0 0 6px; }
-.rd-booking-dates { font-size: 12px; color: #666; margin: 0 0 8px; }
-.rd-booking-total { font-size: 13px; font-weight: 600; color: #0F6E56; margin: 0; }
-
-.rd-empty {
-  text-align: center; padding: 2.5rem;
-  color: #888; margin-bottom: 24px;
+/* ── Empty ── */
+.rd-empty { text-align: center; padding: 2rem; color: #6b9e84; margin-bottom: 28px; }
+.rd-empty p { font-size: 14px; font-weight: 500; margin-bottom: 1rem; }
+.rd-empty-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border: none; border-radius: 30px;
+  color: #ffffff !important; font-size: 14px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 3px 0 #065f3a;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
 }
-.rd-empty p { margin: 0 0 1rem; }
-.rd-empty button {
-  padding: 9px 20px; background: #1D9E75;
-  border: none; border-radius: 8px;
-  color: white; font-size: 14px; cursor: pointer;
-}
 
-.rd-quick-actions {
+/* ── Quick actions ── */
+.rd-quick {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 12px; margin-top: 8px;
+  gap: 12px;
 }
-@media (max-width: 500px) {
-  .rd-quick-actions { grid-template-columns: 1fr; }
-}
-
+@media (max-width: 500px) { .rd-quick { grid-template-columns: 1fr; } }
 .rd-quick-card {
-  background: white; border: 1px solid #e0e0dc;
-  border-radius: 12px; padding: 1.25rem;
-  text-align: center; cursor: pointer;
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 1.25rem; text-align: center;
+  cursor: pointer; box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+  transition: border-color .15s, transform .15s;
 }
-.rd-quick-card:hover { border-color: #1D9E75; }
-.rd-quick-icon { font-size: 24px; margin-bottom: 8px; }
-.rd-quick-label { font-size: 14px; font-weight: 500; margin: 0 0 4px; }
-.rd-quick-sub { font-size: 12px; color: #888; margin: 0; }
+.rd-quick-card:hover { border-color: #1DB974; transform: translateY(-2px); }
+.rd-quick-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px; font-size: 18px;
+  box-shadow: 0 2px 0 #065f3a;
+}
+.rd-quick-label { font-size: 14px; font-weight: 700; color: #0A3D2B; margin-bottom: 2px; -webkit-font-smoothing: antialiased; }
+.rd-quick-sub   { font-size: 12px; color: #6b9e84; font-weight: 500; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .rd-nav { padding: 12px 16px; }
+  .rd-nav-btn { font-size: 12px; padding: 6px 8px; }
+  .rd-content { padding: 16px 12px; }
+  .rd-banner { flex-direction: column; align-items: flex-start; gap: 14px; }
+}

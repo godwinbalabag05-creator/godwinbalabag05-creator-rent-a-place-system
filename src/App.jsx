@@ -7,6 +7,13 @@ import PropertyDetail from './Pages/PropertyDetail'
 import BookingForm from './Pages/BookingForm'
 import MyBookings from './Pages/MyBookings'
 import RenterDashboard from './Pages/RenterDashboard'
+import AdminDashboard from './Pages/AdminDashboard'
+import AdminListings from './Pages/AdminListings'
+import AdminBookings from './Pages/AdminBookings'
+import AdminUsers from './Pages/AdminUsers'
+
+
+
 
 
 
@@ -29,7 +36,15 @@ function App() {
 
         <Route path="/renter/dashboard" element={<RenterDashboard />} />
 
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         
+        <Route path="/admin/listings" element={<AdminListings />} />
+
+        <Route path="/admin/bookings" element={<AdminBookings />} />
+
+        <Route path="/admin/users" element={<AdminUsers />} />
+
+
       </Routes>
     </BrowserRouter>
   )

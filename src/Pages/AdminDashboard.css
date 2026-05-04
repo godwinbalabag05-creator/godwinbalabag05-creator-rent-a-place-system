@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.ad-page {
+  min-height: 100vh;
+  background: #F0FAF5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Navbar ── */
+.ad-nav {
+  background: #0A3D2B;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.ad-logo { color: #A8F0C6; font-size: 18px; font-weight: 700; }
+.ad-nav-links { display: flex; gap: 4px; }
+.ad-nav-btn {
+  background: none; border: none;
+  color: #7ecfaa; font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 7px 14px; border-radius: 30px;
+  transition: background .15s, color .15s;
+  -webkit-font-smoothing: antialiased;
+}
+.ad-nav-btn:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+.ad-nav-btn.active { background: rgba(168,240,198,0.15); color: #ffffff !important; font-weight: 600; }
+.ad-nav-btn.logout { color: #fca5a5 !important; }
+.ad-nav-btn.logout:hover { background: rgba(220,38,38,0.15) !important; color: #ffffff !important; }
+
+/* ── Content ── */
+.ad-content { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
+
+/* ── Banner ── */
+.ad-banner {
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border-radius: 16px; padding: 1.5rem 2rem;
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 20px;
+}
+.ad-banner h2 {
+  color: #ffffff; font-size: 20px; font-weight: 800;
+  margin-bottom: 4px; -webkit-font-smoothing: antialiased;
+}
+.ad-banner p { color: #d1fae5; font-size: 13px; font-weight: 500; }
+.ad-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-size: 14px; font-weight: 700;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Stats ── */
+.ad-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 28px;
+}
+@media (max-width: 600px) { .ad-stats { grid-template-columns: repeat(2, 1fr); } }
+.ad-stat {
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+}
+.ad-stat-label {
+  font-size: 11px; font-weight: 700; color: #6b9e84;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;
+}
+.ad-stat-num {
+  font-size: 26px; font-weight: 800; color: #0A3D2B;
+  -webkit-font-smoothing: antialiased;
+}
+.ad-stat-num.green  { color: #0A7C52; }
+.ad-stat-num.amber  { color: #d97706; }
+.ad-stat-num.purple { color: #534AB7; }
+
+/* ── Section header ── */
+.ad-section-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 14px;
+}
+.ad-section-hdr h3 {
+  font-size: 16px; font-weight: 800; color: #0A3D2B;
+  -webkit-font-smoothing: antialiased;
+}
+.ad-view-all {
+  background: none; border: none; font-size: 13px;
+  font-weight: 600; color: #1DB974; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.ad-view-all:hover { text-decoration: underline; }
+
+/* ── Table ── */
+.ad-table-wrap {
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+  margin-bottom: 28px;
+}
+.ad-table { width: 100%; border-collapse: collapse; }
+.ad-table th {
+  background: #F0FAF5; padding: 11px 16px;
+  font-size: 11px; font-weight: 700; color: #6b9e84;
+  text-transform: uppercase; letter-spacing: .05em;
+  text-align: left; border-bottom: 1.5px solid #d4f0e2;
+}
+.ad-table td {
+  padding: 13px 16px; font-size: 13px;
+  color: #2d6a4f; border-bottom: 1px solid #f0faf5;
+  font-weight: 500;
+}
+.ad-table tr:last-child td { border-bottom: none; }
+.ad-table tr:hover td { background: #f9fdfb; }
+.ad-td-name  { font-weight: 700 !important; color: #0A3D2B !important; }
+.ad-td-total { font-weight: 700 !important; color: #0A7C52 !important; }
+
+/* ── Action buttons ── */
+.ad-approve-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border: none; border-radius: 30px;
+  color: #ffffff !important; font-size: 12px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 2px 0 #065f3a;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  margin-right: 6px; transition: filter .15s;
+}
+.ad-approve-btn:hover { filter: brightness(1.1); }
+
+.ad-cancel-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  border: none; border-radius: 30px;
+  color: #ffffff !important; font-size: 12px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 2px 0 #991b1b;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  transition: filter .15s;
+}
+.ad-cancel-btn:hover { filter: brightness(1.08); }
+
+/* ── Empty ── */
+.ad-empty {
+  text-align: center; padding: 2.5rem;
+  font-size: 14px; font-weight: 500; color: #6b9e84;
+}
+
+/* ── Quick actions ── */
+.ad-quick {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 500px) { .ad-quick { grid-template-columns: 1fr; } }
+.ad-quick-card {
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 1.25rem; text-align: center;
+  cursor: pointer; box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+  transition: border-color .15s, transform .15s;
+}
+.ad-quick-card:hover { border-color: #1DB974; transform: translateY(-2px); }
+.ad-quick-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px; font-size: 18px;
+  box-shadow: 0 2px 0 #065f3a;
+}
+.ad-quick-label { font-size: 14px; font-weight: 700; color: #0A3D2B; margin-bottom: 2px; -webkit-font-smoothing: antialiased; }
+.ad-quick-sub   { font-size: 12px; color: #6b9e84; font-weight: 500; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ad-nav { padding: 12px 16px; }
+  .ad-nav-btn { font-size: 12px; padding: 6px 8px; }
+  .ad-content { padding: 16px 12px; }
+  .ad-table { font-size: 12px; }
+  .ad-table th, .ad-table td { padding: 10px 10px; }
+}

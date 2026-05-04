@@ -88,7 +88,7 @@ export default function LandingPage() {
             <label>Full name</label>
             <input
               type="text"
-              placeholder="Juan dela Cruz"
+              placeholder="Gopaks"
               value={registerData.name}
               onChange={e => setRegisterData({ ...registerData, name: e.target.value })}
             />

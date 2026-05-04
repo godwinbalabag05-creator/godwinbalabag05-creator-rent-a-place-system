@@ -1,5 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import './PropertyDetail.css'
 
 const MOCK_PROPERTIES = [
@@ -44,38 +44,48 @@ const MOCK_PROPERTIES = [
 export default function PropertyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-
   const property = MOCK_PROPERTIES.find(p => p.id === parseInt(id))
+
+  function handleLogout() {
+    localStorage.removeItem('user')
+    navigate('/')
+  }
 
   if (!property) {
     return (
       <div className="pd-page">
-        <p className="pd-not-found">Property not found. <span onClick={() => navigate('/renter/browse')}>Go back</span></p>
+        <nav className="pd-nav">
+          <span className="pd-logo">RentAPlace</span>
+        </nav>
+        <div className="pd-content">
+          <p className="pd-not-found">
+            Property not found.{' '}
+            <span onClick={() => navigate('/renter/browse')}>Go back to browse</span>
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="pd-page">
-
       <nav className="pd-nav">
-  <span className="pd-logo">RentAPlace</span>
-  <div className="pd-nav-links">
-    <span onClick={() => navigate('/renter/dashboard')} className="pd-nav-link">Dashboard</span>
-    <span onClick={() => navigate('/renter/browse')} className="pd-nav-link">Browse</span>
-    <span onClick={() => navigate('/renter/bookings')} className="pd-nav-link">My bookings</span>
-  </div>
-</nav>
+        <span className="pd-logo">RentAPlace</span>
+        <div className="pd-nav-links">
+          <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+          <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
+          <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+          <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </nav>
 
       <div className="pd-content">
-
         <div className="pd-hero">🏠</div>
 
         <div className="pd-body">
-
           <div className="pd-info">
             <h1 className="pd-title">{property.title}</h1>
-            <p className="pd-city">{property.city}</p>
+            <p className="pd-city">📍 {property.city}</p>
 
             <div className="pd-tags">
               <span className="pd-tag">{property.guests} guests</span>
@@ -95,7 +105,6 @@ export default function PropertyDetail() {
           </div>
 
           <BookingPanel property={property} />
-
         </div>
       </div>
     </div>
@@ -104,13 +113,12 @@ export default function PropertyDetail() {
 
 function BookingPanel({ property }) {
   const navigate = useNavigate()
-  const [checkIn, setCheckIn] = useState('')
+  const [checkIn, setCheckIn]   = useState('')
   const [checkOut, setCheckOut] = useState('')
 
   const nights = checkIn && checkOut
     ? Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
     : 0
-
   const total = nights > 0 ? property.price * nights : 0
 
   function handleBookNow() {
@@ -129,7 +137,7 @@ function BookingPanel({ property }) {
       <p className="pd-per">per night</p>
 
       <label>Check-in</label>
-      <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
+      <input type="date" value={checkIn}  onChange={e => setCheckIn(e.target.value)}  />
 
       <label>Check-out</label>
       <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
@@ -152,7 +160,9 @@ function BookingPanel({ property }) {
         <span>{total > 0 ? '₱' + total.toLocaleString() : '—'}</span>
       </div>
 
-      <button className="pd-btn" onClick={handleBookNow}>Book now</button>
+      <button className="pd-book-btn" onClick={handleBookNow}>
+        Book now →
+      </button>
     </div>
   )
 }

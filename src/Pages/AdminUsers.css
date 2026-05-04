@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.au-page {
+  min-height: 100vh;
+  background: #F0FAF5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Navbar ── */
+.au-nav {
+  background: #0A3D2B; padding: 14px 28px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.au-logo { color: #A8F0C6; font-size: 18px; font-weight: 700; }
+.au-nav-links { display: flex; gap: 4px; }
+.au-nav-btn {
+  background: none; border: none; color: #7ecfaa;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 7px 14px; border-radius: 30px;
+  transition: background .15s, color .15s;
+  -webkit-font-smoothing: antialiased;
+}
+.au-nav-btn:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+.au-nav-btn.active { background: rgba(168,240,198,0.15); color: #ffffff !important; font-weight: 600; }
+.au-nav-btn.logout { color: #fca5a5 !important; }
+.au-nav-btn.logout:hover { background: rgba(220,38,38,0.15) !important; color: #ffffff !important; }
+
+/* ── Content ── */
+.au-content { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
+
+/* ── Header ── */
+.au-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+.au-header h2 { font-size: 22px; font-weight: 800; color: #0A3D2B; margin-bottom: 2px; }
+.au-subheader { font-size: 13px; color: #6b9e84; font-weight: 500; }
+
+/* ── Stats ── */
+.au-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+@media (max-width: 500px) { .au-stats { grid-template-columns: 1fr; } }
+.au-stat {
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 14px; padding: 14px;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+}
+.au-stat-label {
+  font-size: 11px; font-weight: 700; color: #6b9e84;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px;
+}
+.au-stat-num {
+  font-size: 22px; font-weight: 800; color: #0A3D2B;
+  -webkit-font-smoothing: antialiased;
+}
+.au-stat-num.active-c  { color: #0A7C52; }
+.au-stat-num.suspended { color: #dc2626; }
+
+/* ── Search ── */
+.au-search-row { margin-bottom: 16px; }
+.au-search-row input {
+  width: 100%; max-width: 380px;
+  padding: 10px 18px; border: 1.5px solid #d4f0e2;
+  border-radius: 30px; font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #0A3D2B; background: #ffffff; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.au-search-row input:focus {
+  border-color: #1DB974;
+  box-shadow: 0 0 0 3px rgba(29,185,116,0.15);
+}
+.au-search-row input::placeholder { color: #9ec9b0; }
+
+/* ── Table ── */
+.au-table-wrap {
+  background: #ffffff; border: 1.5px solid #d4f0e2;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+}
+.au-table { width: 100%; border-collapse: collapse; }
+.au-table th {
+  background: #F0FAF5; padding: 11px 16px;
+  font-size: 11px; font-weight: 700; color: #6b9e84;
+  text-transform: uppercase; letter-spacing: .05em;
+  text-align: left; border-bottom: 1.5px solid #d4f0e2;
+}
+.au-table td {
+  padding: 13px 16px; font-size: 13px;
+  color: #2d6a4f; border-bottom: 1px solid #f0faf5;
+  font-weight: 500;
+}
+.au-table tr:last-child td { border-bottom: none; }
+.au-table tr:hover td { background: #f9fdfb; }
+.au-td-bookings { font-weight: 700 !important; color: #0A3D2B !important; }
+.au-td-spent    { font-weight: 700 !important; color: #0A7C52 !important; }
+
+/* ── Avatar cell ── */
+.au-avatar-cell { display: flex; align-items: center; gap: 10px; }
+.au-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-size: 13px; font-weight: 700;
+  flex-shrink: 0; -webkit-font-smoothing: antialiased;
+}
+.au-avatar.suspended {
+  background: linear-gradient(135deg, #dc2626, #f87171);
+}
+.au-name  { font-weight: 700; color: #0A3D2B; font-size: 13px; }
+.au-email { font-size: 11px; color: #6b9e84; margin-top: 1px; }
+
+/* ── Badges ── */
+.au-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 30px;
+  -webkit-font-smoothing: antialiased;
+}
+.au-badge.active    { background: #d1fae5; color: #065f46; }
+.au-badge.suspended { background: #fef2f2; color: #dc2626; }
+
+/* ── Action buttons ── */
+.au-suspend-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  border: none; border-radius: 30px;
+  color: #ffffff !important; font-size: 12px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 2px 0 #991b1b;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  transition: filter .15s;
+}
+.au-suspend-btn:hover { filter: brightness(1.08); }
+
+.au-restore-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border: none; border-radius: 30px;
+  color: #ffffff !important; font-size: 12px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer; box-shadow: 0 2px 0 #065f3a;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  transition: filter .15s;
+}
+.au-restore-btn:hover { filter: brightness(1.1); }
+
+/* ── Empty ── */
+.au-empty {
+  text-align: center; padding: 2.5rem;
+  font-size: 14px; font-weight: 500; color: #6b9e84;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .au-nav { padding: 12px 16px; }
+  .au-nav-btn { font-size: 12px; padding: 6px 8px; }
+  .au-content { padding: 16px 12px; }
+  .au-table th, .au-table td { padding: 10px 10px; font-size: 12px; }
+  .au-search-row input { max-width: 100%; }
+}
