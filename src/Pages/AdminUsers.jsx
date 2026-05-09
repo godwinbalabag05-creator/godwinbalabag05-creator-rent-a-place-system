@@ -2,116 +2,267 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AdminUsers.css'
 
-const INITIAL_USERS = [
-  { id: 1, name: 'Juan dela Cruz', email: 'renter@rent.com',  phone: '09171234567', bookings: 0, spent: 0,     status: 'active' },
-  { id: 2, name: 'Maria Santos',   email: 'maria@email.com',  phone: '09281234567', bookings: 2, spent: 12500, status: 'active' },
-  { id: 3, name: 'Carlo Reyes',    email: 'carlo@email.com',  phone: '09391234567', bookings: 1, spent: 2400,  status: 'suspended' },
-  { id: 4, name: 'Ana Gomez',      email: 'ana@email.com',    phone: '09451234567', bookings: 4, spent: 21000, status: 'active' },
-]
+import { db } from '../Firebase'
+import { auth } from '../Firebase'
+
+import {
+  ref,
+  onValue,
+  update
+} from 'firebase/database'
 
 export default function AdminUsers() {
-  const [users,   setUsers]   = useState(INITIAL_USERS)
-  const [query,   setQuery]   = useState('')
-  const [bookings, setBookings] = useState([])
+
+  const [users, setUsers] = useState([])
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   useEffect(() => {
-    if (!user.email || user.role !== 'admin') navigate('/')
-    // Load real bookings to show accurate stats per user
-    const stored = JSON.parse(localStorage.getItem('bookings') || '[]')
-    setBookings(stored)
-    // Update Juan's stats from real localStorage bookings
-    const juanBookings = stored.filter(b => b.renterEmail === 'renter@rent.com')
-    const juanSpent    = juanBookings.filter(b => b.status !== 'cancelled').reduce((s, b) => s + b.total, 0)
-    setUsers(prev => prev.map(u =>
-      u.email === 'renter@rent.com'
-        ? { ...u, bookings: juanBookings.length, spent: juanSpent }
-        : u
-    ))
+
+    // Protect admin route
+    if (!user.email || user.role !== 'admin') {
+      navigate('/')
+      return
+    }
+
+    // Fetch users from Firebase
+    const usersRef = ref(db, 'users')
+
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+
+      if (snapshot.exists()) {
+
+        const data = snapshot.val()
+
+        const usersArray = Object.keys(data).map((key, index) => {
+
+          const currentUser = data[key]
+
+          return {
+            id: key,
+            firebaseUID: key,
+            UID: currentUser.UID || '',
+            name: currentUser.name || 'No Name',
+            email: currentUser.email || '',
+            phone: currentUser.phone || 'N/A',
+            role: currentUser.role || 'renter',
+            createdAt: currentUser.createdAt || '',
+            bookings: currentUser.bookings || 0,
+            spent: currentUser.spent || 0,
+            status: currentUser.status || 'active'
+          }
+        })
+
+        // Optional: only show renters
+        const rentersOnly = usersArray.filter(
+          u => u.role === 'renter'
+        )
+
+        setUsers(rentersOnly)
+
+      } else {
+        setUsers([])
+      }
+
+      setLoading(false)
+
+    })
+
+    return () => unsubscribe()
+
   }, [])
 
+  // LOGOUT
   function handleLogout() {
     localStorage.removeItem('user')
+    auth.signOut()
     navigate('/')
   }
 
+  // USER INITIALS
   function getInitials(name) {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
-  function handleToggle(id) {
-    setUsers(prev => prev.map(u =>
-      u.id === id
-        ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' }
-        : u
-    ))
+  // TOGGLE USER STATUS
+  async function handleToggle(userId, currentStatus) {
+
+    try {
+
+      const newStatus =
+        currentStatus === 'active'
+          ? 'suspended'
+          : 'active'
+
+      await update(
+        ref(db, `users/${userId}`),
+        {
+          status: newStatus
+        }
+      )
+
+    } catch (error) {
+      console.log(error)
+      alert('Failed to update user status.')
+    }
   }
 
-  const filtered       = users.filter(u =>
+  // SEARCH FILTER
+  const filtered = users.filter(u =>
     u.name.toLowerCase().includes(query.toLowerCase()) ||
     u.email.toLowerCase().includes(query.toLowerCase())
   )
-  const totalCount     = users.length
-  const activeCount    = users.filter(u => u.status === 'active').length
-  const suspendedCount = users.filter(u => u.status === 'suspended').length
+
+  // STATS
+  const totalCount = users.length
+
+  const activeCount = users.filter(
+    u => u.status === 'active'
+  ).length
+
+  const suspendedCount = users.filter(
+    u => u.status === 'suspended'
+  ).length
 
   return (
     <div className="au-page">
 
+      {/* NAVBAR */}
       <nav className="au-nav">
-        <span className="au-logo">RentAPlace</span>
+
+        <span className="au-logo">
+          RentAPlace
+        </span>
+
         <div className="au-nav-links">
-          <button className="au-nav-btn" onClick={() => navigate('/admin/dashboard')}>Dashboard</button>
-          <button className="au-nav-btn" onClick={() => navigate('/admin/listings')}>Listings</button>
-          <button className="au-nav-btn" onClick={() => navigate('/admin/bookings')}>Bookings</button>
-          <button className="au-nav-btn active">Users</button>
-          <button className="au-nav-btn logout" onClick={handleLogout}>Logout</button>
+
+          <button
+            className="au-nav-btn"
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            Dashboard
+          </button>
+
+          <button
+            className="au-nav-btn"
+            onClick={() => navigate('/admin/listings')}
+          >
+            Listings
+          </button>
+
+          <button
+            className="au-nav-btn"
+            onClick={() => navigate('/admin/bookings')}
+          >
+            Bookings
+          </button>
+
+          <button className="au-nav-btn active">
+            Users
+          </button>
+
+          <button
+            className="au-nav-btn logout"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+
         </div>
+
       </nav>
 
+      {/* CONTENT */}
       <div className="au-content">
 
+        {/* HEADER */}
         <div className="au-header">
+
           <div>
             <h2>Manage users</h2>
-            <p className="au-subheader">{totalCount} registered renters</p>
+
+            <p className="au-subheader">
+              {totalCount} registered renters
+            </p>
           </div>
+
         </div>
 
-        {/* Stats */}
+        {/* STATS */}
         <div className="au-stats">
+
           <div className="au-stat">
-            <p className="au-stat-label">Total renters</p>
-            <p className="au-stat-num">{totalCount}</p>
+            <p className="au-stat-label">
+              Total renters
+            </p>
+
+            <p className="au-stat-num">
+              {totalCount}
+            </p>
           </div>
+
           <div className="au-stat">
-            <p className="au-stat-label">Active</p>
-            <p className="au-stat-num active-c">{activeCount}</p>
+            <p className="au-stat-label">
+              Active
+            </p>
+
+            <p className="au-stat-num active-c">
+              {activeCount}
+            </p>
           </div>
+
           <div className="au-stat">
-            <p className="au-stat-label">Suspended</p>
-            <p className="au-stat-num suspended">{suspendedCount}</p>
+            <p className="au-stat-label">
+              Suspended
+            </p>
+
+            <p className="au-stat-num suspended">
+              {suspendedCount}
+            </p>
           </div>
+
         </div>
 
-        {/* Search */}
+        {/* SEARCH */}
         <div className="au-search-row">
+
           <input
             type="text"
             placeholder="Search by name or email..."
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
+
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="au-table-wrap">
-          {filtered.length === 0 ? (
-            <div className="au-empty">No users found.</div>
+
+          {loading ? (
+
+            <div className="au-empty">
+              Loading users...
+            </div>
+
+          ) : filtered.length === 0 ? (
+
+            <div className="au-empty">
+              No users found.
+            </div>
+
           ) : (
+
             <table className="au-table">
+
               <thead>
                 <tr>
                   <th>Renter</th>
@@ -122,47 +273,110 @@ export default function AdminUsers() {
                   <th>Actions</th>
                 </tr>
               </thead>
+
               <tbody>
+
                 {filtered.map(u => (
+
                   <tr key={u.id}>
+
                     <td>
+
                       <div className="au-avatar-cell">
-                        <div className={`au-avatar${u.status === 'suspended' ? ' suspended' : ''}`}>
+
+                        <div className={`au-avatar ${u.status === 'suspended'
+                          ? 'suspended'
+                          : ''
+                          }`}
+                        >
                           {getInitials(u.name)}
                         </div>
+
                         <div>
-                          <div className="au-name">{u.name}</div>
-                          <div className="au-email">{u.email}</div>
+
+                          <div className="au-name">
+                            {u.name}
+                          </div>
+
+                          <div className="au-email">
+                            {u.email}
+                          </div>
+
                         </div>
+
                       </div>
+
                     </td>
-                    <td>{u.phone}</td>
-                    <td className="au-td-bookings">{u.bookings}</td>
-                    <td className="au-td-spent">₱{u.spent.toLocaleString()}</td>
+
                     <td>
+                      {u.phone}
+                    </td>
+
+                    <td className="au-td-bookings">
+                      {u.bookings}
+                    </td>
+
+                    <td className="au-td-spent">
+                      ₱{Number(u.spent).toLocaleString()}
+                    </td>
+
+                    <td>
+
                       <span className={`au-badge ${u.status}`}>
-                        {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+                        {u.status.charAt(0).toUpperCase() +
+                          u.status.slice(1)}
                       </span>
+
                     </td>
+
                     <td>
+
                       {u.status === 'active' ? (
-                        <button className="au-suspend-btn" onClick={() => handleToggle(u.id)}>
+
+                        <button
+                          className="au-suspend-btn"
+                          onClick={() =>
+                            handleToggle(
+                              u.firebaseUID,
+                              u.status
+                            )
+                          }
+                        >
                           Suspend
                         </button>
+
                       ) : (
-                        <button className="au-restore-btn" onClick={() => handleToggle(u.id)}>
+
+                        <button
+                          className="au-restore-btn"
+                          onClick={() =>
+                            handleToggle(
+                              u.firebaseUID,
+                              u.status
+                            )
+                          }
+                        >
                           Restore
                         </button>
+
                       )}
+
                     </td>
+
                   </tr>
+
                 ))}
+
               </tbody>
+
             </table>
+
           )}
+
         </div>
 
       </div>
+
     </div>
   )
 }

@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
+  console.log(user)
 
   useEffect(() => {
     if (!user.email || user.role !== 'admin') navigate('/')

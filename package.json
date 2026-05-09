@@ -12,10 +12,12 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
     "chart.js": "^4.5.1",
+    "firebase": "^12.13.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.2.4",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
