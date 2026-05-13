@@ -1,35 +1,76 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './BrowsePage.css'
+import useAuthGuard from '../hooks/useAuthGuard'
 
-const MOCK_PROPERTIES = [
-  { id: 1, title: 'Cozy Studio in Davao',   city: 'Davao City',          price: 850,  guests: 2 },
-  { id: 2, title: 'Modern Flat near Mall',   city: 'Davao City',          price: 1200, guests: 4 },
-  { id: 3, title: 'Beach House Samal',       city: 'Island Garden City',  price: 2500, guests: 6 },
-  { id: 4, title: 'Quiet Room Toril',        city: 'Davao City',          price: 600,  guests: 1 },
-  { id: 5, title: 'Family Home Calinan',     city: 'Davao City',          price: 1800, guests: 5 },
-  { id: 6, title: 'Studio in Tagum',         city: 'Tagum City',          price: 750,  guests: 2 },
-]
+
+import { db, auth } from '../Firebase'
+import { ref, onValue } from 'firebase/database'
 
 const CARD_COLORS = ['#d1fae5','#EEEDFE','#fef3c7','#fee2e2','#dbeafe','#fce7f3']
 const CARD_ICONS  = ['🏠','🏡','🏢','🏘️','🏗️','🛖']
 
 export default function BrowsePage() {
-  const [query, setQuery] = useState('')
-  const [sort, setSort]   = useState('')
+  useAuthGuard('renter')
+  const [properties, setProperties] = useState([])
+  const [query,      setQuery]      = useState('')
+  const [sort,       setSort]       = useState('')
+  const [loading,    setLoading]    = useState(true)
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
+  useEffect(() => {
+    if (!user.email) {
+      navigate('/')
+      return
+    }
+
+    // Listen to properties from Firebase
+    const propertiesRef = ref(db, 'properties')
+
+    const unsubscribe = onValue(propertiesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+
+        const propertiesArray = Object.keys(data)
+          .map(key => ({
+            id:          key,
+            title:       data[key].title       || '',
+            city:        data[key].city        || '',
+            price:       data[key].price       || 0,
+            guests:      data[key].guests      || 0,
+            description: data[key].description || '',
+            status:      data[key].status      || 'available',
+            createdAt:   data[key].createdAt   || '',
+          }))
+          // Only show available properties to renters
+          .filter(p => p.status === 'available')
+
+        setProperties(propertiesArray)
+      } else {
+        setProperties([])
+      }
+
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
   function handleLogout() {
     localStorage.removeItem('user')
+    auth.signOut()
     navigate('/')
   }
 
-  let filtered = MOCK_PROPERTIES.filter(p =>
+  // Search filter
+  let filtered = properties.filter(p =>
     p.title.toLowerCase().includes(query.toLowerCase()) ||
     p.city.toLowerCase().includes(query.toLowerCase())
   )
+
+  // Sort
   if (sort === 'asc')  filtered.sort((a, b) => a.price - b.price)
   if (sort === 'desc') filtered.sort((a, b) => b.price - a.price)
 
@@ -63,12 +104,33 @@ export default function BrowsePage() {
           <button className="bp-search-btn">Search</button>
         </div>
 
-        <p className="bp-count">
-          Showing {filtered.length} {filtered.length === 1 ? 'property' : 'properties'}
-        </p>
+        {loading ? (
+          <p className="bp-count">Loading properties...</p>
+        ) : (
+          <p className="bp-count">
+            Showing {filtered.length} {filtered.length === 1 ? 'property' : 'properties'}
+          </p>
+        )}
 
-        {filtered.length === 0 ? (
-          <p className="bp-empty">No properties found.</p>
+        {loading ? (
+          <div className="bp-grid">
+            {[1,2,3].map(i => (
+              <div key={i} className="bp-card" style={{ opacity: 0.4 }}>
+                <div className="bp-card-img" style={{ background: '#d1fae5' }}>🏠</div>
+                <div className="bp-card-body">
+                  <p className="bp-card-title">Loading...</p>
+                  <p className="bp-card-city">Please wait</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bp-empty">
+            {query
+              ? `No properties found for "${query}".`
+              : 'No properties available right now.'
+            }
+          </div>
         ) : (
           <div className="bp-grid">
             {filtered.map((property, i) => (
@@ -87,7 +149,9 @@ export default function BrowsePage() {
                   <p className="bp-card-title">{property.title}</p>
                   <p className="bp-card-city">{property.city}</p>
                   <div className="bp-card-footer">
-                    <span className="bp-price">₱{property.price.toLocaleString()}/night</span>
+                    <span className="bp-price">
+                      ₱{Number(property.price).toLocaleString()}/night
+                    </span>
                     <span className="bp-guests">{property.guests} guests</span>
                   </div>
                 </div>

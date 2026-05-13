@@ -1,21 +1,70 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './RenterDashboard.css'
+import useAuthGuard from '../hooks/useAuthGuard'
+
+
+import { db, auth } from '../Firebase'
+import { ref, onValue } from 'firebase/database'
 
 export default function RenterDashboard() {
+  useAuthGuard('renter')
   const [bookings, setBookings] = useState([])
+  const [loading,  setLoading]  = useState(true)
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   useEffect(() => {
-    if (!user.email) navigate('/')
-    const stored = JSON.parse(localStorage.getItem('bookings') || '[]')
-    setBookings(stored)
+    if (!user.email) {
+      navigate('/')
+      return
+    }
+
+    // Listen to bookings — filter by this renter's email
+    const bookingsRef = ref(db, 'bookings')
+
+    const unsubscribe = onValue(bookingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+
+        const bookingsArray = Object.keys(data)
+          .map(key => ({
+            id:            key,
+            ref:           data[key].ref           || '',
+            propertyId:    data[key].propertyId    || '',
+            propertyTitle: data[key].propertyTitle || '',
+            propertyCity:  data[key].propertyCity  || '',
+            checkIn:       data[key].checkIn       || '',
+            checkOut:      data[key].checkOut      || '',
+            nights:        data[key].nights        || 0,
+            total:         data[key].total         || 0,
+            status:        data[key].status        || 'pending',
+            renterEmail:   data[key].renterEmail   || '',
+            createdAt:     data[key].createdAt     || '',
+          }))
+          // Only show THIS renter's bookings
+          .filter(b => b.renterEmail === user.email)
+
+        // Sort newest first
+        bookingsArray.sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        )
+
+        setBookings(bookingsArray)
+      } else {
+        setBookings([])
+      }
+
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   function handleLogout() {
     localStorage.removeItem('user')
+    auth.signOut()
     navigate('/')
   }
 
@@ -41,11 +90,9 @@ export default function RenterDashboard() {
   const approvedCount = bookings.filter(b => b.status === 'approved').length
   const totalSpent    = bookings
     .filter(b => b.status !== 'cancelled')
-    .reduce((sum, b) => sum + b.total, 0)
+    .reduce((sum, b) => sum + Number(b.total), 0)
 
-  const recentBookings = [...bookings]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 4)
+  const recentBookings = [...bookings].slice(0, 4)
 
   return (
     <div className="rd-page">
@@ -69,7 +116,10 @@ export default function RenterDashboard() {
             <p>{getTodayString()}</p>
           </div>
           <div className="rd-banner-right">
-            <button className="rd-browse-btn" onClick={() => navigate('/renter/browse')}>
+            <button
+              className="rd-browse-btn"
+              onClick={() => navigate('/renter/browse')}
+            >
               Browse places
             </button>
             <div className="rd-avatar">{getInitials(user.name)}</div>
@@ -80,34 +130,52 @@ export default function RenterDashboard() {
         <div className="rd-stats">
           <div className="rd-stat">
             <p className="rd-stat-label">Total bookings</p>
-            <p className="rd-stat-num">{totalCount}</p>
+            <p className="rd-stat-num">
+              {loading ? '...' : totalCount}
+            </p>
           </div>
           <div className="rd-stat">
             <p className="rd-stat-label">Pending</p>
-            <p className="rd-stat-num pending">{pendingCount}</p>
+            <p className="rd-stat-num pending">
+              {loading ? '...' : pendingCount}
+            </p>
           </div>
           <div className="rd-stat">
             <p className="rd-stat-label">Approved</p>
-            <p className="rd-stat-num approved">{approvedCount}</p>
+            <p className="rd-stat-num approved">
+              {loading ? '...' : approvedCount}
+            </p>
           </div>
           <div className="rd-stat">
             <p className="rd-stat-label">Total spent</p>
-            <p className="rd-stat-num spent">₱{totalSpent.toLocaleString()}</p>
+            <p className="rd-stat-num spent">
+              {loading ? '...' : '₱' + totalSpent.toLocaleString()}
+            </p>
           </div>
         </div>
 
         {/* Recent bookings */}
         <div className="rd-section-header">
           <h3>Recent bookings</h3>
-          <button className="rd-see-all" onClick={() => navigate('/renter/bookings')}>
+          <button
+            className="rd-see-all"
+            onClick={() => navigate('/renter/bookings')}
+          >
             See all →
           </button>
         </div>
 
-        {recentBookings.length === 0 ? (
+        {loading ? (
+          <div className="rd-empty">
+            <p>Loading your bookings...</p>
+          </div>
+        ) : recentBookings.length === 0 ? (
           <div className="rd-empty">
             <p>You have no bookings yet.</p>
-            <button className="rd-empty-btn" onClick={() => navigate('/renter/browse')}>
+            <button
+              className="rd-empty-btn"
+              onClick={() => navigate('/renter/browse')}
+            >
               Browse properties
             </button>
           </div>
@@ -125,7 +193,9 @@ export default function RenterDashboard() {
                 <p className="rd-booking-dates">
                   {formatDate(booking.checkIn)} – {formatDate(booking.checkOut)} · {booking.nights} nights
                 </p>
-                <p className="rd-booking-total">₱{booking.total.toLocaleString()}</p>
+                <p className="rd-booking-total">
+                  ₱{Number(booking.total).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>

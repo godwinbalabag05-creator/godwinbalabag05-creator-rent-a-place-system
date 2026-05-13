@@ -4,35 +4,79 @@ import './AnalyticsChart.css'
 
 Chart.register(...registerables)
 
-const DATA = {
-  weekly: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    revenue: [1200, 850, 2500, 600, 1800, 3200, 750],
-    bookings: [1, 1, 2, 1, 2, 3, 1],
-  },
-  monthly: {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-    revenue: [0,0,0,0,0,0,0,0,0,0,0,0],
-    bookings: [0, 0, 0, 4, 6, 7, 6, 6, 5, 7, 8, 10],
-  },
-  yearly: {
-    labels: ['2021', '2022', '2023', '2024', '2025', '2026'],
-    revenue: [45000, 72000, 98000, 135000, 180000, 48500],
-    bookings: [18, 29, 41, 55, 72, 12],
-  },
+// ── Builds real chart data from Firebase bookings ──
+function buildData(bookings) {
+  const now = new Date()
+
+  const weeklyRevenue   = Array(7).fill(0)
+  const weeklyBookings  = Array(7).fill(0)
+  const monthlyRevenue  = Array(12).fill(0)
+  const monthlyBookings = Array(12).fill(0)
+  const yearlyMap       = {}
+
+  bookings.forEach(b => {
+    if (!b.createdAt) return
+    const d          = new Date(b.createdAt)
+    const isApproved = b.status === 'approved'
+
+    // Weekly — last 7 days
+    const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24))
+    if (diffDays < 7) {
+      const dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1
+      weeklyBookings[dayIndex]++
+      if (isApproved) weeklyRevenue[dayIndex] += Number(b.total)
+    }
+
+    // Monthly — this year only
+    if (d.getFullYear() === now.getFullYear()) {
+      monthlyBookings[d.getMonth()]++
+      if (isApproved) monthlyRevenue[d.getMonth()] += Number(b.total)
+    }
+
+    // Yearly — all time
+    const yr = d.getFullYear().toString()
+    if (!yearlyMap[yr]) yearlyMap[yr] = { revenue: 0, bookings: 0 }
+    yearlyMap[yr].bookings++
+    if (isApproved) yearlyMap[yr].revenue += Number(b.total)
+  })
+
+  const yearLabels   = Object.keys(yearlyMap).sort()
+  const yearRevenue  = yearLabels.map(y => yearlyMap[y].revenue)
+  const yearBookings = yearLabels.map(y => yearlyMap[y].bookings)
+
+  return {
+    weekly: {
+      labels:   ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      revenue:  weeklyRevenue,
+      bookings: weeklyBookings,
+    },
+    monthly: {
+      labels:   ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      revenue:  monthlyRevenue,
+      bookings: monthlyBookings,
+    },
+    yearly: {
+      labels:   yearLabels.length   ? yearLabels   : [now.getFullYear().toString()],
+      revenue:  yearRevenue.length  ? yearRevenue  : [0],
+      bookings: yearBookings.length ? yearBookings : [0],
+    },
+  }
 }
 
-export default function AnalyticsChart() {
+export default function AnalyticsChart({ bookings = [] }) {
   const [range, setRange] = useState('weekly')
   const [type,  setType]  = useState('both')
   const chartRef  = useRef(null)
   const chartInst = useRef(null)
 
-  const d            = DATA[range]
+  // Build data from real bookings every time bookings change
+  const DATA = buildData(bookings)
+  const d    = DATA[range]
+
   const totalRevenue = d.revenue.reduce((a, b) => a + b, 0)
   const totalBook    = d.bookings.reduce((a, b) => a + b, 0)
-  const approved     = Math.round(totalBook * 0.7)
-  const pending      = Math.round(totalBook * 0.3)
+  const approved     = bookings.filter(b => b.status === 'approved').length
+  const pending      = bookings.filter(b => b.status === 'pending').length
 
   function buildDatasets() {
     const sets = []
@@ -106,6 +150,7 @@ export default function AnalyticsChart() {
     return scales
   }
 
+  // Re-render chart when range, type OR bookings change
   useEffect(() => {
     if (chartInst.current) chartInst.current.destroy()
     chartInst.current = new Chart(chartRef.current, {
@@ -129,7 +174,7 @@ export default function AnalyticsChart() {
       },
     })
     return () => { if (chartInst.current) chartInst.current.destroy() }
-  }, [range, type])
+  }, [range, type, bookings])  // ← added bookings here so chart updates when data arrives
 
   return (
     <div className="ac-wrap">
@@ -143,7 +188,6 @@ export default function AnalyticsChart() {
           <p className="ac-stat-label">Total bookings</p>
           <p className="ac-stat-num">{totalBook}</p>
         </div>
-        
         <div className="ac-stat">
           <p className="ac-stat-label">Approved</p>
           <p className="ac-stat-num green">{approved}</p>
@@ -153,7 +197,6 @@ export default function AnalyticsChart() {
           <p className="ac-stat-num amber">{pending}</p>
         </div>
       </div>
-      
 
       <div className="ac-controls">
         <div className="ac-tabs">

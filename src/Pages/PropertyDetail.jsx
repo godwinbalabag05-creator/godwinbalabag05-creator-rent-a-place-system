@@ -1,72 +1,112 @@
-import { useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import './PropertyDetail.css'
+import useAuthGuard from '../hooks/useAuthGuard'
 
-const MOCK_PROPERTIES = [
-  {
-    id: 1, title: 'Cozy Studio in Davao', city: 'Davao City',
-    price: 850, guests: 2, type: 'Studio',
-    description: 'A comfortable and fully furnished studio unit perfect for solo travelers or couples. Located near major establishments, restaurants, and public transport. Includes free WiFi, air conditioning, and a private bathroom.',
-    amenities: ['WiFi', 'Air con', 'Private bath', 'Kitchen'],
-  },
-  {
-    id: 2, title: 'Modern Flat near Mall', city: 'Davao City',
-    price: 1200, guests: 4, type: 'Flat',
-    description: 'Spacious modern flat just 5 minutes from SM Lanang. Perfect for small families or groups. Features a fully equipped kitchen and a cozy living area.',
-    amenities: ['WiFi', 'Air con', 'Kitchen', 'Parking'],
-  },
-  {
-    id: 3, title: 'Beach House Samal', city: 'Island Garden City',
-    price: 2500, guests: 6, type: 'Beach House',
-    description: 'Wake up to ocean views in this stunning beach house on Samal Island. Perfect for family getaways. Comes with a private deck and beach access.',
-    amenities: ['Beach access', 'WiFi', 'BBQ area', 'Air con'],
-  },
-  {
-    id: 4, title: 'Quiet Room Toril', city: 'Davao City',
-    price: 600, guests: 1, type: 'Room',
-    description: 'A quiet and affordable private room in a peaceful neighborhood in Toril. Great for solo travelers on a budget.',
-    amenities: ['WiFi', 'Fan', 'Shared bath'],
-  },
-  {
-    id: 5, title: 'Family Home Calinan', city: 'Davao City',
-    price: 1800, guests: 5, type: 'House',
-    description: 'A spacious family home in the cool highlands of Calinan. Features a garden, multiple bedrooms, and a large living space.',
-    amenities: ['WiFi', 'Air con', 'Garden', 'Kitchen', 'Parking'],
-  },
-  {
-    id: 6, title: 'Studio in Tagum', city: 'Tagum City',
-    price: 750, guests: 2, type: 'Studio',
-    description: 'A cozy studio unit in the heart of Tagum City. Walking distance to restaurants, malls, and transport hubs.',
-    amenities: ['WiFi', 'Air con', 'Private bath'],
-  },
-]
+import { db, auth } from '../Firebase'
+import { ref, onValue } from 'firebase/database'
 
 export default function PropertyDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const property = MOCK_PROPERTIES.find(p => p.id === parseInt(id))
+  useAuthGuard('renter')
+  const { id }     = useParams()
+  const navigate   = useNavigate()
+
+  const [property, setProperty] = useState(null)
+  const [loading,  setLoading]  = useState(true)
+  const [notFound, setNotFound] = useState(false)
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  useEffect(() => {
+    if (!user.email) {
+      navigate('/')
+      return
+    }
+
+    // Listen to this specific property from Firebase
+    const propertyRef = ref(db, `properties/${id}`)
+
+    const unsubscribe = onValue(propertyRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+
+        setProperty({
+          id,
+          title:       data.title       || '',
+          city:        data.city        || '',
+          price:       data.price       || 0,
+          guests:      data.guests      || 0,
+          type:        data.type        || 'Property',
+          description: data.description || 'No description available.',
+          amenities:   data.amenities   || [],
+          status:      data.status      || 'available',
+        })
+        setNotFound(false)
+      } else {
+        setNotFound(true)
+      }
+
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [id])
 
   function handleLogout() {
     localStorage.removeItem('user')
+    auth.signOut()
     navigate('/')
   }
 
-  if (!property) {
+  // ── Loading state ──
+  if (loading) {
     return (
       <div className="pd-page">
         <nav className="pd-nav">
           <span className="pd-logo">RentAPlace</span>
+          <div className="pd-nav-links">
+            <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+            <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
+            <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+            <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
+          </div>
         </nav>
         <div className="pd-content">
-          <p className="pd-not-found">
-            Property not found.{' '}
-            <span onClick={() => navigate('/renter/browse')}>Go back to browse</span>
+          <div className="pd-hero" style={{ opacity: 0.4 }}>🏠</div>
+          <p style={{ textAlign: 'center', color: '#6b9e84', marginTop: '1rem' }}>
+            Loading property...
           </p>
         </div>
       </div>
     )
   }
 
+  // ── Not found state ──
+  if (notFound || !property) {
+    return (
+      <div className="pd-page">
+        <nav className="pd-nav">
+          <span className="pd-logo">RentAPlace</span>
+          <div className="pd-nav-links">
+            <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+            <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
+            <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+            <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
+          </div>
+        </nav>
+        <div className="pd-content">
+          <p className="pd-not-found">
+            Property not found.{' '}
+            <span onClick={() => navigate('/renter/browse')}>
+              Go back to browse
+            </span>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Property found ──
   return (
     <div className="pd-page">
       <nav className="pd-nav">
@@ -80,9 +120,11 @@ export default function PropertyDetail() {
       </nav>
 
       <div className="pd-content">
+
         <div className="pd-hero">🏠</div>
 
         <div className="pd-body">
+
           <div className="pd-info">
             <h1 className="pd-title">{property.title}</h1>
             <p className="pd-city">📍 {property.city}</p>
@@ -96,15 +138,20 @@ export default function PropertyDetail() {
             <p className="pd-section-label">About this place</p>
             <p className="pd-desc">{property.description}</p>
 
-            <p className="pd-section-label">Amenities</p>
-            <div className="pd-tags">
-              {property.amenities.map(a => (
-                <span key={a} className="pd-tag">{a}</span>
-              ))}
-            </div>
+            {property.amenities && property.amenities.length > 0 && (
+              <>
+                <p className="pd-section-label">Amenities</p>
+                <div className="pd-tags">
+                  {property.amenities.map((a, i) => (
+                    <span key={i} className="pd-tag">{a}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <BookingPanel property={property} />
+
         </div>
       </div>
     </div>
@@ -113,13 +160,16 @@ export default function PropertyDetail() {
 
 function BookingPanel({ property }) {
   const navigate = useNavigate()
-  const [checkIn, setCheckIn]   = useState('')
+  const [checkIn,  setCheckIn]  = useState('')
   const [checkOut, setCheckOut] = useState('')
+
+  const today = new Date().toISOString().split('T')[0]
 
   const nights = checkIn && checkOut
     ? Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
     : 0
-  const total = nights > 0 ? property.price * nights : 0
+
+  const total = nights > 0 ? Number(property.price) * nights : 0
 
   function handleBookNow() {
     if (!checkIn || !checkOut || nights <= 0) {
@@ -133,14 +183,24 @@ function BookingPanel({ property }) {
 
   return (
     <div className="pd-book">
-      <p className="pd-price-big">₱{property.price.toLocaleString()}</p>
+      <p className="pd-price-big">₱{Number(property.price).toLocaleString()}</p>
       <p className="pd-per">per night</p>
 
       <label>Check-in</label>
-      <input type="date" value={checkIn}  onChange={e => setCheckIn(e.target.value)}  />
+      <input
+        type="date"
+        value={checkIn}
+        min={today}
+        onChange={e => setCheckIn(e.target.value)}
+      />
 
       <label>Check-out</label>
-      <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
+      <input
+        type="date"
+        value={checkOut}
+        min={checkIn || today}
+        onChange={e => setCheckOut(e.target.value)}
+      />
 
       <hr className="pd-divider" />
 
@@ -149,7 +209,7 @@ function BookingPanel({ property }) {
         <span>{nights > 0 ? nights : '—'}</span>
       </div>
       <div className="pd-total-row">
-        <span>₱{property.price.toLocaleString()} × {nights > 0 ? nights : '—'}</span>
+        <span>₱{Number(property.price).toLocaleString()} × {nights > 0 ? nights : '—'}</span>
         <span>{total > 0 ? '₱' + total.toLocaleString() : '—'}</span>
       </div>
 

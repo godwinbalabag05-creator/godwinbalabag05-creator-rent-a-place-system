@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AdminUsers.css'
+import useAuthGuard from '../hooks/useAuthGuard'
 
 import { db } from '../Firebase'
 import { auth } from '../Firebase'
@@ -12,7 +13,7 @@ import {
 } from 'firebase/database'
 
 export default function AdminUsers() {
-
+  useAuthGuard('admin')
   const [users, setUsers] = useState([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)

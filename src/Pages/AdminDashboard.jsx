@@ -2,49 +2,103 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AdminDashboard.css'
 import AnalyticsChart from '../components/AnalyticsChart'
+import useAuthGuard from '../hooks/useAuthGuard'
 
 
-const MOCK_PROPERTIES = [
-  { id: 1, title: 'Cozy Studio in Davao',  city: 'Davao City',         price: 850  },
-  { id: 2, title: 'Modern Flat near Mall', city: 'Davao City',         price: 1200 },
-  { id: 3, title: 'Beach House Samal',     city: 'Island Garden City', price: 2500 },
-  { id: 4, title: 'Quiet Room Toril',      city: 'Davao City',         price: 600  },
-  { id: 5, title: 'Family Home Calinan',   city: 'Davao City',         price: 1800 },
-  { id: 6, title: 'Studio in Tagum',       city: 'Tagum City',         price: 750  },
-]
+import { db, auth } from '../Firebase'
+import { ref, onValue, update } from 'firebase/database'
 
 export default function AdminDashboard() {
-  const [bookings, setBookings] = useState([])
+  useAuthGuard('admin')
+  const [bookings,   setBookings]   = useState([])
+  const [properties, setProperties] = useState([])
+  const [loading,    setLoading]    = useState(true)
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
-  console.log(user)
 
   useEffect(() => {
-    if (!user.email || user.role !== 'admin') navigate('/')
-    const stored = JSON.parse(localStorage.getItem('bookings') || '[]')
-    setBookings(stored)
+    if (!user.email || user.role !== 'admin') {
+      navigate('/')
+      return
+    }
+
+    // Listen to bookings in real time
+    const bookingsRef = ref(db, 'bookings')
+    const unsubscribeBookings = onValue(bookingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+        const bookingsArray = Object.keys(data).map(key => ({
+          id:            key,
+          ref:           data[key].ref           || '',
+          renterName:    data[key].renterName    || 'Unknown',
+          renterEmail:   data[key].renterEmail   || '',
+          propertyTitle: data[key].propertyTitle || '',
+          propertyCity:  data[key].propertyCity  || '',
+          checkIn:       data[key].checkIn       || '',
+          checkOut:      data[key].checkOut      || '',
+          nights:        data[key].nights        || 0,
+          total:         data[key].total         || 0,
+          status:        data[key].status        || 'pending',
+          createdAt:     data[key].createdAt     || '',
+        }))
+        bookingsArray.sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        )
+        setBookings(bookingsArray)
+      } else {
+        setBookings([])
+      }
+      setLoading(false)
+    })
+
+    // Listen to properties in real time
+    const propertiesRef = ref(db, 'properties')
+    const unsubscribeProperties = onValue(propertiesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+        const propertiesArray = Object.keys(data).map(key => ({
+          id:     key,
+          ...data[key]
+        }))
+        setProperties(propertiesArray)
+      } else {
+        setProperties([])
+      }
+    })
+
+    return () => {
+      unsubscribeBookings()
+      unsubscribeProperties()
+    }
   }, [])
 
   function handleLogout() {
     localStorage.removeItem('user')
+    auth.signOut()
     navigate('/')
   }
 
-  function handleApprove(id) {
-    const updated = bookings.map(b =>
-      b.id === id ? { ...b, status: 'approved' } : b
-    )
-    setBookings(updated)
-    localStorage.setItem('bookings', JSON.stringify(updated))
+  async function handleApprove(bookingId) {
+    try {
+      await update(ref(db, `bookings/${bookingId}`), {
+        status: 'approved'
+      })
+    } catch (error) {
+      console.log(error)
+      alert('Failed to approve booking.')
+    }
   }
 
-  function handleCancel(id) {
-    const updated = bookings.map(b =>
-      b.id === id ? { ...b, status: 'cancelled' } : b
-    )
-    setBookings(updated)
-    localStorage.setItem('bookings', JSON.stringify(updated))
+  async function handleCancel(bookingId) {
+    try {
+      await update(ref(db, `bookings/${bookingId}`), {
+        status: 'cancelled'
+      })
+    } catch (error) {
+      console.log(error)
+      alert('Failed to cancel booking.')
+    }
   }
 
   function formatDate(d) {
@@ -59,12 +113,12 @@ export default function AdminDashboard() {
     })
   }
 
-  const totalProperties = MOCK_PROPERTIES.length
+  const totalProperties = properties.length
   const totalBookings   = bookings.length
   const pendingBookings = bookings.filter(b => b.status === 'pending')
   const totalRevenue    = bookings
     .filter(b => b.status === 'approved')
-    .reduce((sum, b) => sum + b.total, 0)
+    .reduce((sum, b) => sum + Number(b.total), 0)
 
   return (
     <div className="ad-page">
@@ -85,46 +139,55 @@ export default function AdminDashboard() {
         {/* Banner */}
         <div className="ad-banner">
           <div>
-            <h2>Welcome, Admin!</h2>
+            <h2>Welcome, {user.name || 'Admin'}!</h2>
             <p>{getTodayString()} — Here's what needs your attention today.</p>
           </div>
-          <div className="ad-avatar">AD</div>
+          <div className="ad-avatar">
+            {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+          </div>
         </div>
 
         {/* Stats */}
         <div className="ad-stats">
           <div className="ad-stat">
             <p className="ad-stat-label">Total properties</p>
-            <p className="ad-stat-num green">{totalProperties}</p>
+            <p className="ad-stat-num green">
+              {loading ? '...' : totalProperties}
+            </p>
           </div>
           <div className="ad-stat">
             <p className="ad-stat-label">Total bookings</p>
-            <p className="ad-stat-num">{totalBookings}</p>
+            <p className="ad-stat-num">
+              {loading ? '...' : totalBookings}
+            </p>
           </div>
-          
           <div className="ad-stat">
             <p className="ad-stat-label">Pending approval</p>
-            <p className="ad-stat-num amber">{pendingBookings.length}</p>
+            <p className="ad-stat-num amber">
+              {loading ? '...' : pendingBookings.length}
+            </p>
           </div>
           <div className="ad-stat">
             <p className="ad-stat-label">Total revenue</p>
-            <p className="ad-stat-num purple">₱{totalRevenue.toLocaleString()}</p>
+            <p className="ad-stat-num purple">
+              {loading ? '...' : '₱' + totalRevenue.toLocaleString()}
+            </p>
           </div>
         </div>
 
+        {/* Analytics Chart */}
         <div className="ad-section-hdr" style={{ marginTop: '28px' }}>
-        <h3>Analytics</h3>
+          <h3>Analytics</h3>
         </div>
-
         <div style={{
-        background: '#ffffff',
-        border: '1.5px solid #d4f0e2',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        marginBottom: '28px',
-        boxShadow: '0 1px 3px rgba(10,61,43,0.08)'
+          background: '#ffffff',
+          border: '1.5px solid #d4f0e2',
+          borderRadius: '16px',
+          padding: '1.5rem',
+          marginBottom: '28px',
+          boxShadow: '0 1px 3px rgba(10,61,43,0.08)'
         }}>
-        <AnalyticsChart />
+          <AnalyticsChart bookings={bookings} />
         </div>
 
         {/* Pending bookings table */}
@@ -136,7 +199,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="ad-table-wrap">
-          {pendingBookings.length === 0 ? (
+          {loading ? (
+            <div className="ad-empty">Loading bookings...</div>
+          ) : pendingBookings.length === 0 ? (
             <div className="ad-empty">No pending bookings — all caught up! 🎉</div>
           ) : (
             <table className="ad-table">
@@ -157,12 +222,20 @@ export default function AdminDashboard() {
                     <td>{booking.propertyTitle}</td>
                     <td>{formatDate(booking.checkIn)}</td>
                     <td>{formatDate(booking.checkOut)}</td>
-                    <td className="ad-td-total">₱{booking.total.toLocaleString()}</td>
+                    <td className="ad-td-total">
+                      ₱{Number(booking.total).toLocaleString()}
+                    </td>
                     <td>
-                      <button className="ad-approve-btn" onClick={() => handleApprove(booking.id)}>
+                      <button
+                        className="ad-approve-btn"
+                        onClick={() => handleApprove(booking.id)}
+                      >
                         Approve
                       </button>
-                      <button className="ad-cancel-btn" onClick={() => handleCancel(booking.id)}>
+                      <button
+                        className="ad-cancel-btn"
+                        onClick={() => handleCancel(booking.id)}
+                      >
                         Cancel
                       </button>
                     </td>

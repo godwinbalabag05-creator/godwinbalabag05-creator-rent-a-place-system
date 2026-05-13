@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import './LandingPage.css'
 
 import { db } from '../Firebase'
@@ -19,6 +19,8 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 
 export default function LandingPage() {
+  const [searchParams] = useSearchParams()                          
+  const wasSuspended = searchParams.get('suspended') === 'true'
   const [tab, setTab] = useState('login')
 
   const [loginData, setLoginData] = useState({
@@ -67,6 +69,14 @@ export default function LandingPage() {
       }
 
       const userData = snapshot.val()
+
+      // ── ADD THIS CHECK ──
+      if (userData.status === 'suspended') {
+        setError('Your account has been suspended. Please contact the admin.')
+        setLoading(false)
+        return
+      }
+      // ── END OF CHECK ──
 
       // Save user locally
       localStorage.setItem('user', JSON.stringify(userData))
@@ -132,6 +142,7 @@ export default function LandingPage() {
         name: registerData.name,
         email: registerData.email,
         role: 'renter',
+        status: 'active',
         createdAt: new Date().toISOString()
       }
 
@@ -176,6 +187,9 @@ export default function LandingPage() {
       <div className="lp-card">
 
         <div className="lp-logo">
+          <div className="lp-logo-icon">
+            🏠
+          </div>
           <div className="lp-logo-text">
             RentAPlace
           </div>
@@ -213,6 +227,12 @@ export default function LandingPage() {
         {tab === 'login' && (
           <form onSubmit={handleLogin}>
 
+            {/* Suspension message */}
+    {wasSuspended && (
+      <p className="lp-error">
+        Your account has been suspended. Please contact the admin.
+      </p>
+    )}
             <label>Email address</label>
 
             <input
@@ -272,7 +292,7 @@ export default function LandingPage() {
 
             <input
               type="text"
-              placeholder="Juan Dela Cruz"
+              placeholder="Godwin Balabag"
               value={registerData.name}
               onChange={(e) =>
                 setRegisterData({
