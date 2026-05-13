@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import './BookingForm.css'
 import useAuthGuard from '../hooks/useAuthGuard'
+
+
 import { db, auth } from '../Firebase'
 import { ref, push, update } from 'firebase/database'
-import PaymentStep from './PaymentStep'
 
 export default function BookingForm() {
   useAuthGuard('renter')
@@ -14,18 +15,14 @@ export default function BookingForm() {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-  const [name,          setName]          = useState(user.name  || '')
-  const [email,         setEmail]         = useState(user.email || '')
-  const [phone,         setPhone]         = useState(user.phone || '')
-  const [note,          setNote]          = useState('')
-  const [error,         setError]         = useState('')
-  const [saving,        setSaving]        = useState(false)
-
-  // Payment flow state
-  const [step,          setStep]          = useState('form')   // 'form' | 'payment' | 'success'
-  const [bookingKey,    setBookingKey]    = useState('')        // Firebase push key
-  const [transactionID, setTransactionID] = useState('')
-  const [bookingRef,    setBookingRef]    = useState('')
+  const [name,       setName]       = useState(user.name  || '')
+  const [email,      setEmail]      = useState(user.email || '')
+  const [phone,      setPhone]      = useState(user.phone || '')
+  const [note,       setNote]       = useState('')
+  const [error,      setError]      = useState('')
+  const [submitted,  setSubmitted]  = useState(false)
+  const [bookingRef, setBookingRef] = useState('')
+  const [saving,     setSaving]     = useState(false)
 
   function handleLogout() {
     localStorage.removeItem('user')
@@ -33,6 +30,7 @@ export default function BookingForm() {
     navigate('/')
   }
 
+  // Guard — if user navigated here without booking state
   if (!state || !state.property) {
     return (
       <div className="bf-page">
@@ -42,7 +40,9 @@ export default function BookingForm() {
         <div className="bf-content">
           <p className="bf-lost">
             No booking info found.{' '}
-            <span onClick={() => navigate('/renter/browse')}>Go back to browse</span>
+            <span onClick={() => navigate('/renter/browse')}>
+              Go back to browse
+            </span>
           </p>
         </div>
       </div>
@@ -57,7 +57,6 @@ export default function BookingForm() {
     })
   }
 
-  // ── Step 1: Submit form → create booking in Firebase with paymentStatus: 'pending' ──
   async function handleConfirm(e) {
     e.preventDefault()
 
@@ -70,99 +69,87 @@ export default function BookingForm() {
     setSaving(true)
 
     try {
-      const ref_number  = '#BK-' + Math.floor(100000 + Math.random() * 900000)
-      const txnID       = 'TXN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase()
-      const now         = new Date().toISOString()
+      // Generate booking reference
+      const ref_number = '#BK-' + Math.floor(100000 + Math.random() * 900000)
 
+      // Build booking object
       const bookingData = {
-        ref:              ref_number,
-        propertyId:       property.id,
-        propertyTitle:    property.title,
-        propertyCity:     property.city,
+        ref:           ref_number,
+        propertyId:    property.id,
+        propertyTitle: property.title,
+        propertyCity:  property.city,
         checkIn,
         checkOut,
         nights,
         total,
-        status:           'pending',
-
-        // Payment fields
-        amount:           total,
-        transactionID:    txnID,
-        paymentMethod:    '',           // filled after user picks method
-        paymentStatus:    'pending',    // pending | paid | failed
-        paymentCreatedAt: now,
-        paidAt:           '',
-
-        renterName:       name,
-        renterEmail:      email,
-        renterPhone:      phone,
-        renterUID:        user.firebaseUID || user.UID || '',
+        status:        'pending',
+        renterName:    name,
+        renterEmail:   email,
+        renterPhone:   phone,
+        renterUID:     user.firebaseUID || user.UID || '',
         note,
-        createdAt:        now,
+        createdAt:     new Date().toISOString(),
       }
 
-      // Push to Firebase
+      // Save booking to Firebase under bookings/
       const bookingsRef = ref(db, 'bookings')
-      const newRef      = await push(bookingsRef, bookingData)
+      await push(bookingsRef, bookingData)
 
-      // Update phone on user profile
+      // Update phone number on user profile in Firebase
+      // so AdminUsers shows the real phone number
       if (user.firebaseUID && phone) {
-        await update(ref(db, `users/${user.firebaseUID}`), { phone })
+        await update(ref(db, `users/${user.firebaseUID}`), {
+          phone: phone
+        })
+
+        // Also update localStorage so it's consistent
         const updatedUser = { ...user, phone }
         localStorage.setItem('user', JSON.stringify(updatedUser))
       }
 
-      setBookingKey(newRef.key)
-      setTransactionID(txnID)
       setBookingRef(ref_number)
-      setStep('payment')
+      setSubmitted(true)
 
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      console.log(error)
       setError('Failed to save booking. Please try again.')
     }
 
     setSaving(false)
   }
 
-  // ── Called by PaymentStep when payment is confirmed ──
-  function handlePaymentSuccess() {
-    setStep('success')
-  }
-
-  const Nav = () => (
-    <nav className="bf-nav">
-      <span className="bf-logo">RentAPlace</span>
-      <div className="bf-nav-links">
-        <button className="bf-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
-        <button className="bf-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
-        <button className="bf-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
-        <button className="bf-nav-btn logout" onClick={handleLogout}>Logout</button>
-      </div>
-    </nav>
-  )
-
   // ── Success screen ──
-  if (step === 'success') {
+  if (submitted) {
     return (
       <div className="bf-page">
-        <Nav />
+        <nav className="bf-nav">
+          <span className="bf-logo">RentAPlace</span>
+          <div className="bf-nav-links">
+            <button className="bf-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+            <button className="bf-nav-btn" onClick={() => navigate('/renter/browse')}>Browse</button>
+            <button className="bf-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+            <button className="bf-nav-btn logout" onClick={handleLogout}>Logout</button>
+          </div>
+        </nav>
         <div className="bf-content">
           <div className="bf-success">
             <div className="bf-check-circle">✓</div>
-            <h2>Payment & Booking Confirmed!</h2>
+            <h2>Booking confirmed!</h2>
             <p className="bf-success-sub">
-              Your payment was received. The booking is pending admin approval.
+              Your booking is pending approval from the admin.
             </p>
             <div className="bf-ref">{bookingRef}</div>
-            <div className="bf-ref" style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-              Transaction: {transactionID}
-            </div>
             <div className="bf-success-btns">
-              <button className="bf-btn-primary" onClick={() => navigate('/renter/bookings')}>
+              <button
+                className="bf-btn-primary"
+                onClick={() => navigate('/renter/bookings')}
+              >
                 View my bookings
               </button>
-              <button className="bf-btn-outline" onClick={() => navigate('/renter/browse')}>
+              <button
+                className="bf-btn-outline"
+                onClick={() => navigate('/renter/browse')}
+              >
                 Browse more places
               </button>
             </div>
@@ -172,33 +159,19 @@ export default function BookingForm() {
     )
   }
 
-  // ── Payment step ──
-  if (step === 'payment') {
-    return (
-      <div className="bf-page">
-        <Nav />
-        <div className="bf-content">
-          <PaymentStep
-            bookingKey={bookingKey}
-            transactionID={transactionID}
-            bookingRef={bookingRef}
-            property={property}
-            checkIn={checkIn}
-            checkOut={checkOut}
-            nights={nights}
-            total={total}
-            renterName={name}
-            onSuccess={handlePaymentSuccess}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  // ── Booking form (Step 1) ──
+  // ── Booking form ──
   return (
     <div className="bf-page">
-      <Nav />
+      <nav className="bf-nav">
+        <span className="bf-logo">RentAPlace</span>
+        <div className="bf-nav-links">
+          <button className="bf-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+          <button className="bf-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
+          <button className="bf-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+          <button className="bf-nav-btn logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </nav>
+
       <div className="bf-content">
         <div className="bf-grid">
 
@@ -248,7 +221,7 @@ export default function BookingForm() {
               style={{ marginTop: '1.5rem' }}
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Continue to Payment →'}
+              {saving ? 'Confirming...' : 'Confirm booking'}
             </button>
           </form>
 
@@ -284,7 +257,8 @@ export default function BookingForm() {
               <span>₱{Number(total).toLocaleString()}</span>
             </div>
             <div className="bf-status-note">
-              Next step: choose a <strong>payment method</strong> to complete your booking.
+              After confirming, your booking will be marked as{' '}
+              <strong>pending</strong> until the admin approves it.
             </div>
           </div>
 

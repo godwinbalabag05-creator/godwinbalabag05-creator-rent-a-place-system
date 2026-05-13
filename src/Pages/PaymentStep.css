@@ -1,0 +1,295 @@
+/* =========================
+   PAYMENT STEP (ps-*)
+   Matches bf- Booking UI theme
+========================= */
+
+.ps-wrap {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #F0FAF5;
+  min-height: 100vh;
+  padding: 28px 20px;
+}
+
+/* ── Stepper ── */
+.ps-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  gap: 10px;
+}
+
+.ps-step {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  color: #6b9e84;
+}
+
+.ps-step.active {
+  background: #1DB974;
+  color: #ffffff;
+  border-color: #1DB974;
+}
+
+.ps-step.done {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.ps-step-line {
+  width: 30px;
+  height: 2px;
+  background: #d4f0e2;
+}
+
+/* ── Layout ── */
+.ps-grid {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .ps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Main Card ── */
+.ps-card {
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+}
+
+/* ── Method Buttons ── */
+.ps-method-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 12px;
+
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.ps-method-btn:hover {
+  border-color: #1DB974;
+  background: #f0fdf6;
+  transform: translateY(-1px);
+}
+
+.ps-method-icon {
+  font-size: 22px;
+  margin-right: 10px;
+}
+
+.ps-method-btn strong {
+  display: block;
+  font-size: 14px;
+  color: #0A3D2B;
+}
+
+.ps-method-btn p {
+  margin: 0;
+  font-size: 12px;
+  color: #6b9e84;
+}
+
+.ps-chevron {
+  font-size: 20px;
+  color: #9ec9b0;
+}
+
+/* ── Header ── */
+.ps-method-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ps-back {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1DB974;
+  cursor: pointer;
+}
+
+.ps-back:hover {
+  text-decoration: underline;
+}
+
+/* ── Card Preview ── */
+.ps-card-preview {
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  border-radius: 16px;
+  padding: 18px;
+  color: #ffffff;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 0 #065f3a;
+}
+
+.ps-card-chip {
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.ps-card-num {
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin: 16px 0;
+}
+
+.ps-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* ── Inputs override (keeps bf style but scoped) ── */
+.ps-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b9e84;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.ps-card input {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 30px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  outline: none;
+  color: #0A3D2B;
+  transition: 0.15s;
+}
+
+.ps-card input:focus {
+  border-color: #1DB974;
+  box-shadow: 0 0 0 3px rgba(29,185,116,0.15);
+}
+
+/* ── Row inputs ── */
+.ps-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ── QR Section ── */
+.ps-qr-instruction {
+  font-size: 13px;
+  color: #6b9e84;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.ps-qr-box {
+  background: #ffffff;
+  border: 1.5px dashed #d4f0e2;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.ps-qr-amount {
+  margin-top: 10px;
+  font-weight: 700;
+  color: #0A3D2B;
+}
+
+.ps-qr-link {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6b9e84;
+}
+
+.ps-qr-link a {
+  color: #1DB974;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.ps-qr-link a:hover {
+  text-decoration: underline;
+}
+
+/* ── Divider text ── */
+.ps-divider-text {
+  text-align: center;
+  font-size: 12px;
+  color: #9ec9b0;
+  margin: 14px 0;
+}
+
+/* ── Security note ── */
+.ps-secure-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6b9e84;
+  background: #F0FAF5;
+  border: 1px solid #d4f0e2;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+/* ── Summary reuse spacing ── */
+.ps-ref-block {
+  margin-top: 12px;
+  border-top: 1.5px solid #d4f0e2;
+  padding-top: 10px;
+}
+
+.ps-ref-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b9e84;
+  padding: 4px 0;
+}
+
+.ps-txn {
+  font-family: monospace;
+  color: #0A7C52;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ps-wrap {
+    padding: 16px 12px;
+  }
+
+  .ps-stepper {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ps-row-2 {
+    grid-template-columns: 1fr;
+  }
+}

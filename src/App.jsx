@@ -11,6 +11,7 @@ import AdminDashboard from './Pages/AdminDashboard'
 import AdminListings from './Pages/AdminListings'
 import AdminBookings from './Pages/AdminBookings'
 import AdminUsers from './Pages/AdminUsers'
+import PayPage from './Pages/PayPage'
 
 
 
@@ -23,6 +24,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        <Route path="/pay/:transactionID" element={ <PayPage />} /> 
 
         <Route path="/" element={<LandingPage />} /> 
 

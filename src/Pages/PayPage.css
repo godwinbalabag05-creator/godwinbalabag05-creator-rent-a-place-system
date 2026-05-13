@@ -1,0 +1,105 @@
+.pp-wrap {
+  min-height: 100vh;
+  background: #F0FAF5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── Card ── */
+.pp-card {
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 18px;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(10,61,43,0.08);
+}
+
+/* ── Check Icon ── */
+.pp-check {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+
+  background: linear-gradient(135deg, #0A7C52, #1DB974);
+  color: #ffffff;
+
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 800;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 3px 0 #065f3a;
+}
+
+/* ── Text ── */
+.pp-card h1 {
+  font-size: 22px;
+  color: #0A3D2B;
+  margin-bottom: 6px;
+}
+
+.pp-sub {
+  font-size: 13px;
+  color: #6b9e84;
+  margin-bottom: 18px;
+}
+
+/* ── Info Box ── */
+.pp-box {
+  text-align: left;
+  background: #F0FAF5;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.pp-box div {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #6b9e84;
+  border-bottom: 1px solid #e6f5ed;
+}
+
+.pp-box div:last-child {
+  border-bottom: none;
+}
+
+.pp-box strong {
+  color: #0A3D2B;
+}
+
+/* ── Status ── */
+.pp-status {
+  color: #1DB974;
+  font-weight: 800;
+}
+
+/* ── Note ── */
+.pp-note {
+  font-size: 12px;
+  color: #6b9e84;
+  margin-top: 10px;
+}
+
+/* ── Loading / Error ── */
+.pp-loader,
+.pp-error {
+  font-size: 14px;
+  color: #6b9e84;
+  background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  padding: 14px 18px;
+  border-radius: 12px;
+}
