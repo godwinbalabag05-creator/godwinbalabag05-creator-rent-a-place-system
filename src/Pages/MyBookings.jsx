@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import './MyBookings.css'
 import useAuthGuard from '../hooks/useAuthGuard'
 
-
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
 
@@ -16,13 +15,35 @@ export default function MyBookings() {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
+  // ── Auto complete check ──
+  async function autoCompleteBookings(bookingsArray) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (const booking of bookingsArray) {
+      if (booking.status === 'approved' && booking.checkOut) {
+        const checkOutDate = new Date(booking.checkOut)
+        checkOutDate.setHours(0, 0, 0, 0)
+
+        if (checkOutDate < today) {
+          try {
+            await update(ref(db, `bookings/${booking.id}`), {
+              status: 'completed'
+            })
+          } catch (err) {
+            console.log('Auto complete error:', err)
+          }
+        }
+      }
+    }
+  }
+
   useEffect(() => {
     if (!user.email) {
       navigate('/')
       return
     }
 
-    // Listen to all bookings but filter by this renter's email
     const bookingsRef = ref(db, 'bookings')
 
     const unsubscribe = onValue(bookingsRef, (snapshot) => {
@@ -41,19 +62,21 @@ export default function MyBookings() {
             nights:        data[key].nights        || 0,
             total:         data[key].total         || 0,
             status:        data[key].status        || 'pending',
+            paymentStatus: data[key].paymentStatus || 'pending',
             renterEmail:   data[key].renterEmail   || '',
             renterName:    data[key].renterName    || '',
             renterPhone:   data[key].renterPhone   || '',
             note:          data[key].note          || '',
             createdAt:     data[key].createdAt     || '',
           }))
-          // Only show THIS renter's bookings
           .filter(b => b.renterEmail === user.email)
 
-        // Sort newest first
         bookingsArray.sort((a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt)
         )
+
+        // Run auto complete check
+        autoCompleteBookings(bookingsArray)
 
         setBookings(bookingsArray)
       } else {
@@ -89,13 +112,14 @@ export default function MyBookings() {
     })
   }
 
-  const filtered      = filter === 'all'
+  const filtered        = filter === 'all'
     ? bookings
     : bookings.filter(b => b.status === filter)
 
-  const totalCount    = bookings.length
-  const pendingCount  = bookings.filter(b => b.status === 'pending').length
-  const approvedCount = bookings.filter(b => b.status === 'approved').length
+  const totalCount      = bookings.length
+  const pendingCount    = bookings.filter(b => b.status === 'pending').length
+  const approvedCount   = bookings.filter(b => b.status === 'approved').length
+  const completedCount  = bookings.filter(b => b.status === 'completed').length
 
   return (
     <div className="mb-page">
@@ -132,13 +156,19 @@ export default function MyBookings() {
               {loading ? '...' : approvedCount}
             </p>
           </div>
+          <div className="mb-stat">
+            <p className="mb-stat-label">Completed</p>
+            <p className="mb-stat-num completed">
+              {loading ? '...' : completedCount}
+            </p>
+          </div>
         </div>
 
         {/* Header + filters */}
         <div className="mb-header">
           <h2>My bookings</h2>
           <div className="mb-filters">
-            {['all', 'pending', 'approved', 'cancelled'].map(f => (
+            {['all', 'pending', 'approved', 'completed', 'cancelled'].map(f => (
               <button
                 key={f}
                 className={`mb-filter-btn${filter === f ? ' active' : ''}`}
@@ -169,7 +199,9 @@ export default function MyBookings() {
           <div className="mb-list">
             {filtered.map(booking => (
               <div key={booking.id} className="mb-card">
-                <div className="mb-card-icon">🏠</div>
+                <div className="mb-card-icon">
+                  {booking.status === 'completed' ? '✅' : '🏠'}
+                </div>
                 <div className="mb-card-body">
 
                   <div className="mb-card-top">
@@ -201,6 +233,11 @@ export default function MyBookings() {
                       >
                         Cancel
                       </button>
+                    )}
+                    {booking.status === 'completed' && (
+                      <span className="mb-completed-tag">
+                        Stay completed ✓
+                      </span>
                     )}
                   </div>
 

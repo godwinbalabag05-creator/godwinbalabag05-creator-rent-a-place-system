@@ -180,3 +180,9 @@
   .rd-content { padding: 16px 12px; }
   .rd-banner { flex-direction: column; align-items: flex-start; gap: 14px; }
 }
+
+/* Completed stat */
+.rd-stat-num.completed { color: #534AB7; }
+
+/* Completed badge */
+.rd-badge.completed { background: #EEEDFE; color: #3C3489; }

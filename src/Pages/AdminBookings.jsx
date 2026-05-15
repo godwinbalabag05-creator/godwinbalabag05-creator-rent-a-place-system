@@ -3,18 +3,41 @@ import { useNavigate } from 'react-router-dom'
 import './AdminBookings.css'
 import useAuthGuard from '../hooks/useAuthGuard'
 
-
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
 
 export default function AdminBookings() {
   useAuthGuard('admin')
-  const [bookings,  setBookings] = useState([])
-  const [filter,    setFilter]   = useState('all')
-  const [loading,   setLoading]  = useState(true)
+  const [bookings, setBookings] = useState([])
+  const [filter,   setFilter]   = useState('all')
+  const [loading,  setLoading]  = useState(true)
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  // ── Auto complete check ──
+  // If booking is approved and check-out date has passed → mark as completed
+  async function autoCompleteBookings(bookingsArray) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (const booking of bookingsArray) {
+      if (booking.status === 'approved' && booking.checkOut) {
+        const checkOutDate = new Date(booking.checkOut)
+        checkOutDate.setHours(0, 0, 0, 0)
+
+        if (checkOutDate < today) {
+          try {
+            await update(ref(db, `bookings/${booking.id}`), {
+              status: 'completed'
+            })
+          } catch (err) {
+            console.log('Auto complete error:', err)
+          }
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     if (!user.email || user.role !== 'admin') {
@@ -22,7 +45,6 @@ export default function AdminBookings() {
       return
     }
 
-    // Listen to all bookings in Firebase in real time
     const bookingsRef = ref(db, 'bookings')
 
     const unsubscribe = onValue(bookingsRef, (snapshot) => {
@@ -41,13 +63,16 @@ export default function AdminBookings() {
           nights:        data[key].nights        || 0,
           total:         data[key].total         || 0,
           status:        data[key].status        || 'pending',
+          paymentStatus: data[key].paymentStatus || 'pending',
           createdAt:     data[key].createdAt     || '',
         }))
 
-        // Sort newest first
         bookingsArray.sort((a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt)
         )
+
+        // Run auto complete check
+        autoCompleteBookings(bookingsArray)
 
         setBookings(bookingsArray)
       } else {
@@ -94,11 +119,12 @@ export default function AdminBookings() {
     })
   }
 
-  const filtered       = filter === 'all' ? bookings : bookings.filter(b => b.status === filter)
-  const totalCount     = bookings.length
-  const pendingCount   = bookings.filter(b => b.status === 'pending').length
-  const approvedCount  = bookings.filter(b => b.status === 'approved').length
-  const cancelledCount = bookings.filter(b => b.status === 'cancelled').length
+  const filtered        = filter === 'all' ? bookings : bookings.filter(b => b.status === filter)
+  const totalCount      = bookings.length
+  const pendingCount    = bookings.filter(b => b.status === 'pending').length
+  const approvedCount   = bookings.filter(b => b.status === 'approved').length
+  const cancelledCount  = bookings.filter(b => b.status === 'cancelled').length
+  const completedCount  = bookings.filter(b => b.status === 'completed').length
 
   return (
     <div className="ab-page">
@@ -138,6 +164,10 @@ export default function AdminBookings() {
             <p className="ab-stat-num approved">{approvedCount}</p>
           </div>
           <div className="ab-stat">
+            <p className="ab-stat-label">Completed</p>
+            <p className="ab-stat-num completed">{completedCount}</p>
+          </div>
+          <div className="ab-stat">
             <p className="ab-stat-label">Cancelled</p>
             <p className="ab-stat-num cancelled">{cancelledCount}</p>
           </div>
@@ -145,7 +175,7 @@ export default function AdminBookings() {
 
         {/* Filters */}
         <div className="ab-filters">
-          {['all', 'pending', 'approved', 'cancelled'].map(f => (
+          {['all', 'pending', 'approved', 'completed', 'cancelled'].map(f => (
             <button
               key={f}
               className={`ab-filter-btn${filter === f ? ' active' : ''}`}
@@ -175,6 +205,7 @@ export default function AdminBookings() {
                   <th>Check-out</th>
                   <th>Nights</th>
                   <th>Total</th>
+                  <th>Payment</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -190,6 +221,11 @@ export default function AdminBookings() {
                     <td>{booking.nights}</td>
                     <td className="ab-td-total">
                       ₱{Number(booking.total).toLocaleString()}
+                    </td>
+                    <td>
+                      <span className={`ab-badge ${booking.paymentStatus === 'paid' ? 'approved' : 'pending'}`}>
+                        {booking.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                      </span>
                     </td>
                     <td>
                       <span className={`ab-badge ${booking.status}`}>
@@ -212,6 +248,13 @@ export default function AdminBookings() {
                             Cancel
                           </button>
                         </>
+                      ) : booking.status === 'approved' ? (
+                        <button
+                          className="ab-cancel-btn"
+                          onClick={() => handleCancel(booking.id)}
+                        >
+                          Cancel
+                        </button>
                       ) : (
                         <span className="ab-no-action">—</span>
                       )}

@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import './RenterDashboard.css'
 import useAuthGuard from '../hooks/useAuthGuard'
 
-
 import { db, auth } from '../Firebase'
-import { ref, onValue } from 'firebase/database'
+import { ref, onValue, update } from 'firebase/database'
 
 export default function RenterDashboard() {
   useAuthGuard('renter')
@@ -15,13 +14,35 @@ export default function RenterDashboard() {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
+  // ── Auto complete check ──
+  async function autoCompleteBookings(bookingsArray) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (const booking of bookingsArray) {
+      if (booking.status === 'approved' && booking.checkOut) {
+        const checkOutDate = new Date(booking.checkOut)
+        checkOutDate.setHours(0, 0, 0, 0)
+
+        if (checkOutDate < today) {
+          try {
+            await update(ref(db, `bookings/${booking.id}`), {
+              status: 'completed'
+            })
+          } catch (err) {
+            console.log('Auto complete error:', err)
+          }
+        }
+      }
+    }
+  }
+
   useEffect(() => {
     if (!user.email) {
       navigate('/')
       return
     }
 
-    // Listen to bookings — filter by this renter's email
     const bookingsRef = ref(db, 'bookings')
 
     const unsubscribe = onValue(bookingsRef, (snapshot) => {
@@ -40,16 +61,18 @@ export default function RenterDashboard() {
             nights:        data[key].nights        || 0,
             total:         data[key].total         || 0,
             status:        data[key].status        || 'pending',
+            paymentStatus: data[key].paymentStatus || 'pending',
             renterEmail:   data[key].renterEmail   || '',
             createdAt:     data[key].createdAt     || '',
           }))
-          // Only show THIS renter's bookings
           .filter(b => b.renterEmail === user.email)
 
-        // Sort newest first
         bookingsArray.sort((a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt)
         )
+
+        // Run auto complete check
+        autoCompleteBookings(bookingsArray)
 
         setBookings(bookingsArray)
       } else {
@@ -85,11 +108,12 @@ export default function RenterDashboard() {
     })
   }
 
-  const totalCount    = bookings.length
-  const pendingCount  = bookings.filter(b => b.status === 'pending').length
-  const approvedCount = bookings.filter(b => b.status === 'approved').length
-  const totalSpent    = bookings
-    .filter(b => b.status !== 'cancelled')
+  const totalCount     = bookings.length
+  const pendingCount   = bookings.filter(b => b.status === 'pending').length
+  const approvedCount  = bookings.filter(b => b.status === 'approved').length
+  const completedCount = bookings.filter(b => b.status === 'completed').length
+  const totalSpent     = bookings
+    .filter(b => b.paymentStatus === 'paid')
     .reduce((sum, b) => sum + Number(b.total), 0)
 
   const recentBookings = [...bookings].slice(0, 4)
@@ -144,6 +168,12 @@ export default function RenterDashboard() {
             <p className="rd-stat-label">Approved</p>
             <p className="rd-stat-num approved">
               {loading ? '...' : approvedCount}
+            </p>
+          </div>
+          <div className="rd-stat">
+            <p className="rd-stat-label">Completed</p>
+            <p className="rd-stat-num completed">
+              {loading ? '...' : completedCount}
             </p>
           </div>
           <div className="rd-stat">

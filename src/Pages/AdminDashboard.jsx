@@ -4,7 +4,6 @@ import './AdminDashboard.css'
 import AnalyticsChart from '../components/AnalyticsChart'
 import useAuthGuard from '../hooks/useAuthGuard'
 
-
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
 
@@ -16,6 +15,29 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  // ── Auto complete check ──
+  async function autoCompleteBookings(bookingsArray) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (const booking of bookingsArray) {
+      if (booking.status === 'approved' && booking.checkOut) {
+        const checkOutDate = new Date(booking.checkOut)
+        checkOutDate.setHours(0, 0, 0, 0)
+
+        if (checkOutDate < today) {
+          try {
+            await update(ref(db, `bookings/${booking.id}`), {
+              status: 'completed'
+            })
+          } catch (err) {
+            console.log('Auto complete error:', err)
+          }
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     if (!user.email || user.role !== 'admin') {
@@ -40,11 +62,16 @@ export default function AdminDashboard() {
           nights:        data[key].nights        || 0,
           total:         data[key].total         || 0,
           status:        data[key].status        || 'pending',
+          paymentStatus: data[key].paymentStatus || 'pending',
           createdAt:     data[key].createdAt     || '',
         }))
         bookingsArray.sort((a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt)
         )
+
+        // Run auto complete check
+        autoCompleteBookings(bookingsArray)
+
         setBookings(bookingsArray)
       } else {
         setBookings([])
@@ -58,7 +85,7 @@ export default function AdminDashboard() {
       if (snapshot.exists()) {
         const data = snapshot.val()
         const propertiesArray = Object.keys(data).map(key => ({
-          id:     key,
+          id: key,
           ...data[key]
         }))
         setProperties(propertiesArray)
@@ -113,11 +140,14 @@ export default function AdminDashboard() {
     })
   }
 
-  const totalProperties = properties.length
-  const totalBookings   = bookings.length
-  const pendingBookings = bookings.filter(b => b.status === 'pending')
-  const totalRevenue    = bookings
-    .filter(b => b.status === 'approved')
+  const totalProperties  = properties.length
+  const totalBookings    = bookings.length
+  const pendingBookings  = bookings.filter(b => b.status === 'pending')
+  const completedCount   = bookings.filter(b => b.status === 'completed').length
+
+  // ── Feature 3: Revenue counts from paymentStatus === 'paid' ──
+  const totalRevenue = bookings
+    .filter(b => b.paymentStatus === 'paid')
     .reduce((sum, b) => sum + Number(b.total), 0)
 
   return (
@@ -168,8 +198,14 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="ad-stat">
-            <p className="ad-stat-label">Total revenue</p>
+            <p className="ad-stat-label">Completed stays</p>
             <p className="ad-stat-num purple">
+              {loading ? '...' : completedCount}
+            </p>
+          </div>
+          <div className="ad-stat">
+            <p className="ad-stat-label">Total revenue</p>
+            <p className="ad-stat-num green">
               {loading ? '...' : '₱' + totalRevenue.toLocaleString()}
             </p>
           </div>

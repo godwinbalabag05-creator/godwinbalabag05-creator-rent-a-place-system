@@ -16,28 +16,30 @@ function buildData(bookings) {
 
   bookings.forEach(b => {
     if (!b.createdAt) return
-    const d          = new Date(b.createdAt)
-    const isApproved = b.status === 'approved'
+    const d = new Date(b.createdAt)
+
+    // ── Feature 3: use paymentStatus === 'paid' for revenue ──
+    const isPaid = b.paymentStatus === 'paid'
 
     // Weekly — last 7 days
     const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24))
     if (diffDays < 7) {
       const dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1
       weeklyBookings[dayIndex]++
-      if (isApproved) weeklyRevenue[dayIndex] += Number(b.total)
+      if (isPaid) weeklyRevenue[dayIndex] += Number(b.total)
     }
 
     // Monthly — this year only
     if (d.getFullYear() === now.getFullYear()) {
       monthlyBookings[d.getMonth()]++
-      if (isApproved) monthlyRevenue[d.getMonth()] += Number(b.total)
+      if (isPaid) monthlyRevenue[d.getMonth()] += Number(b.total)
     }
 
     // Yearly — all time
     const yr = d.getFullYear().toString()
     if (!yearlyMap[yr]) yearlyMap[yr] = { revenue: 0, bookings: 0 }
     yearlyMap[yr].bookings++
-    if (isApproved) yearlyMap[yr].revenue += Number(b.total)
+    if (isPaid) yearlyMap[yr].revenue += Number(b.total)
   })
 
   const yearLabels   = Object.keys(yearlyMap).sort()
@@ -69,14 +71,15 @@ export default function AnalyticsChart({ bookings = [] }) {
   const chartRef  = useRef(null)
   const chartInst = useRef(null)
 
-  // Build data from real bookings every time bookings change
   const DATA = buildData(bookings)
   const d    = DATA[range]
 
   const totalRevenue = d.revenue.reduce((a, b) => a + b, 0)
   const totalBook    = d.bookings.reduce((a, b) => a + b, 0)
-  const approved     = bookings.filter(b => b.status === 'approved').length
-  const pending      = bookings.filter(b => b.status === 'pending').length
+
+  // ── Feature 3: real counts using paymentStatus ──
+  const approved  = bookings.filter(b => b.paymentStatus === 'paid').length
+  const pending   = bookings.filter(b => b.paymentStatus !== 'paid').length
 
   function buildDatasets() {
     const sets = []
@@ -130,7 +133,10 @@ export default function AnalyticsChart({ bookings = [] }) {
       scales.y = {
         type: 'linear', position: 'left',
         grid: { color: 'rgba(128,128,128,0.1)' },
-        ticks: { font: { size: 11 }, color: '#0A7C52', callback: v => '₱' + v.toLocaleString() },
+        ticks: {
+          font: { size: 11 }, color: '#0A7C52',
+          callback: v => '₱' + v.toLocaleString()
+        },
       }
       scales.y2 = {
         type: 'linear', position: 'right',
@@ -150,7 +156,6 @@ export default function AnalyticsChart({ bookings = [] }) {
     return scales
   }
 
-  // Re-render chart when range, type OR bookings change
   useEffect(() => {
     if (chartInst.current) chartInst.current.destroy()
     chartInst.current = new Chart(chartRef.current, {
@@ -174,7 +179,7 @@ export default function AnalyticsChart({ bookings = [] }) {
       },
     })
     return () => { if (chartInst.current) chartInst.current.destroy() }
-  }, [range, type, bookings])  // ← added bookings here so chart updates when data arrives
+  }, [range, type, bookings])
 
   return (
     <div className="ac-wrap">
@@ -189,11 +194,11 @@ export default function AnalyticsChart({ bookings = [] }) {
           <p className="ac-stat-num">{totalBook}</p>
         </div>
         <div className="ac-stat">
-          <p className="ac-stat-label">Approved</p>
+          <p className="ac-stat-label">Paid</p>
           <p className="ac-stat-num green">{approved}</p>
         </div>
         <div className="ac-stat">
-          <p className="ac-stat-label">Pending</p>
+          <p className="ac-stat-label">Unpaid</p>
           <p className="ac-stat-num amber">{pending}</p>
         </div>
       </div>
@@ -224,12 +229,22 @@ export default function AnalyticsChart({ bookings = [] }) {
       </div>
 
       <div className="ac-legend">
-        <span><span className="ac-legend-dot" style={{ background: '#0A7C52' }}></span>Revenue (₱)</span>
-        <span><span className="ac-legend-dot" style={{ background: '#534AB7' }}></span>Bookings</span>
+        <span>
+          <span className="ac-legend-dot" style={{ background: '#0A7C52' }}></span>
+          Revenue (₱)
+        </span>
+        <span>
+          <span className="ac-legend-dot" style={{ background: '#534AB7' }}></span>
+          Bookings
+        </span>
       </div>
 
       <div className="ac-chart-wrap">
-        <canvas ref={chartRef} role="img" aria-label="Line chart showing revenue and bookings over time" />
+        <canvas
+          ref={chartRef}
+          role="img"
+          aria-label="Line chart showing revenue and bookings over time"
+        />
       </div>
 
     </div>

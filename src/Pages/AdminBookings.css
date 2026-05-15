@@ -158,3 +158,9 @@
   .ab-nav-btn { font-size: 12px; padding: 6px 8px; }
   .ab-content { padding: 16px 12px; }
 }
+
+/* Completed stat */
+.ab-stat-num.completed { color: #534AB7; }
+
+/* Completed badge */
+.ab-badge.completed { background: #EEEDFE; color: #3C3489; }

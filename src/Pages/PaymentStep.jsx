@@ -1,28 +1,10 @@
-/**
- * PaymentStep.jsx
- *
- * Shown after the booking form is submitted (booking already exists in Firebase
- * with paymentStatus: 'pending').  Lets the renter choose Card or E-wallet,
- * then mock-processes the payment and calls onSuccess().
- *
- * Props:
- *   bookingKey    – Firebase push key  (e.g. "-Nabc123")
- *   transactionID – e.g. "TXN-1716000000000-AB12CD"
- *   bookingRef    – display ref  e.g. "#BK-123456"
- *   property, checkIn, checkOut, nights, total, renterName
- *   onSuccess()   – called after payment is marked paid in Firebase
- */
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
-import { db } from '../Firebase'
-import { ref, update, onValue } from 'firebase/database'
 import './PaymentStep.css'
 
-const PAYMENT_HOST = 'http://192.168.1.10:5173'   // ← change to your LAN IP / deployed URL
+const PAYMENT_HOST = 'http://192.168.1.10:5173'
 
 export default function PaymentStep({
-  bookingKey,
   transactionID,
   bookingRef,
   property,
@@ -33,38 +15,15 @@ export default function PaymentStep({
   renterName,
   onSuccess,
 }) {
-  const [method,    setMethod]    = useState('')          // 'card' | 'ewallet'
-  const [cardNum,   setCardNum]   = useState('')
-  const [cardName,  setCardName]  = useState(renterName)
-  const [expiry,    setExpiry]    = useState('')
-  const [cvv,       setCvv]       = useState('')
-  const [paying,    setPaying]    = useState(false)
-  const [error,     setError]     = useState('')
-  const [qrVisible, setQrVisible] = useState(false)
-
-    const [done, setDone] = useState(false)
+  const [method,   setMethod]   = useState('')
+  const [cardNum,  setCardNum]  = useState('')
+  const [cardName, setCardName] = useState(renterName)
+  const [expiry,   setExpiry]   = useState('')
+  const [cvv,      setCvv]      = useState('')
+  const [paying,   setPaying]   = useState(false)
+  const [error,    setError]    = useState('')
 
   const paymentLink = `${PAYMENT_HOST}/pay/${transactionID}`
-
-
-  useEffect(() => {
-  if (!bookingKey) return
-
-  const bookingRef = ref(db, `bookings/${bookingKey}`)
-
-  const unsubscribe = onValue(bookingRef, (snapshot) => {
-    const data = snapshot.val()
-
-    if (!data) return
-
-    // 🔥 WHEN PAYMENT IS CONFIRMED IN DB
-    if (data.paymentStatus === 'paid') {
-      onSuccess()
-    }
-  })
-
-  return () => unsubscribe()
-}, [bookingKey])
 
   function formatDate(d) {
     return new Date(d).toLocaleDateString('en-PH', {
@@ -73,7 +32,6 @@ export default function PaymentStep({
   }
 
   function formatCardNum(val) {
-    // Keep only digits, group in 4s
     return val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
   }
 
@@ -83,6 +41,7 @@ export default function PaymentStep({
     return digits
   }
 
+  // ── Process payment then call onSuccess ──
   async function processPayment() {
     setError('')
 
@@ -94,24 +53,15 @@ export default function PaymentStep({
       if (!cvv || cvv.length < 3)          { setError('Enter a valid CVV.'); return }
     }
 
-    if (method === 'ewallet') {
-      // For e-wallet: the QR was shown; user hits "I've paid" to confirm
-    }
-
     setPaying(true)
     try {
-      const paidAt = new Date().toISOString()
-      await update(ref(db, `bookings/${bookingKey}`), {
-        paymentMethod:  method,
-        paymentStatus:  'paid',
-        paidAt,
-      })
-      onSuccess()
+      // ── Payment confirmed → tell BookingForm to save booking ──
+      onSuccess(method)
     } catch (err) {
       console.error(err)
       setError('Payment failed. Please try again.')
+      setPaying(false)
     }
-    setPaying(false)
   }
 
   // ── Method picker ──
@@ -127,14 +77,10 @@ export default function PaymentStep({
         </div>
 
         <div className="ps-grid">
-          {/* Left: method selection */}
           <div className="ps-card">
             <p className="bf-section-label">Choose payment method</p>
 
-            <button
-              className="ps-method-btn"
-              onClick={() => setMethod('card')}
-            >
+            <button className="ps-method-btn" onClick={() => setMethod('card')}>
               <span className="ps-method-icon">💳</span>
               <div>
                 <strong>Credit / Debit Card</strong>
@@ -143,10 +89,7 @@ export default function PaymentStep({
               <span className="ps-chevron">›</span>
             </button>
 
-            <button
-              className="ps-method-btn"
-              onClick={() => { setMethod('ewallet'); setQrVisible(true) }}
-            >
+            <button className="ps-method-btn" onClick={() => setMethod('ewallet')}>
               <span className="ps-method-icon">📱</span>
               <div>
                 <strong>E-Wallet (QR)</strong>
@@ -156,7 +99,6 @@ export default function PaymentStep({
             </button>
           </div>
 
-          {/* Right: summary */}
           <OrderSummary
             property={property}
             checkIn={checkIn}
@@ -191,7 +133,6 @@ export default function PaymentStep({
               <p className="bf-section-label" style={{ margin: 0 }}>Card details</p>
             </div>
 
-            {/* Card preview */}
             <div className="ps-card-preview">
               <div className="ps-card-chip">▬▬</div>
               <div className="ps-card-num">{cardNum || '•••• •••• •••• ••••'}</div>
@@ -246,7 +187,9 @@ export default function PaymentStep({
 
             {error && <p className="bf-error">{error}</p>}
 
-            <div className="ps-secure-note">🔒 Your card details are encrypted and secure.</div>
+            <div className="ps-secure-note">
+              🔒 Your card details are encrypted and secure.
+            </div>
 
             <button
               className="bf-btn-primary"
@@ -293,8 +236,8 @@ export default function PaymentStep({
             </div>
 
             <p className="ps-qr-instruction">
-              Open your e-wallet app (GCash, Maya, ShopeePay) and scan the QR code below,
-              or visit the payment link on another device.
+              Open your e-wallet app (GCash, Maya, ShopeePay) and scan
+              the QR code below, or visit the payment link on another device.
             </p>
 
             <div className="ps-qr-box">
@@ -343,7 +286,10 @@ export default function PaymentStep({
   }
 }
 
-function OrderSummary({ property, checkIn, checkOut, nights, total, bookingRef, transactionID, formatDate }) {
+function OrderSummary({
+  property, checkIn, checkOut, nights,
+  total, bookingRef, transactionID, formatDate
+}) {
   return (
     <div className="bf-card">
       <p className="bf-section-label">Order summary</p>
@@ -367,7 +313,7 @@ function OrderSummary({ property, checkIn, checkOut, nights, total, bookingRef, 
           <span>{nights}</span>
         </div>
         <div className="bf-row">
-          <span>₱{Number(property.price).toLocaleString()} × {nights}</span>
+          <span>₱{Number(property.price || 0).toLocaleString()} × {nights}</span>
           <span>₱{Number(total).toLocaleString()}</span>
         </div>
       </div>
@@ -377,8 +323,14 @@ function OrderSummary({ property, checkIn, checkOut, nights, total, bookingRef, 
         <span>₱{Number(total).toLocaleString()}</span>
       </div>
       <div className="ps-ref-block">
-        <div className="ps-ref-row"><span>Booking ref</span><strong>{bookingRef}</strong></div>
-        <div className="ps-ref-row"><span>Transaction ID</span><strong className="ps-txn">{transactionID}</strong></div>
+        <div className="ps-ref-row">
+          <span>Booking ref</span>
+          <strong>{bookingRef}</strong>
+        </div>
+        <div className="ps-ref-row">
+          <span>Transaction ID</span>
+          <strong className="ps-txn">{transactionID}</strong>
+        </div>
       </div>
     </div>
   )

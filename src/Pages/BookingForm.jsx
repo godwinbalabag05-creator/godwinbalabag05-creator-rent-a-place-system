@@ -22,10 +22,12 @@ export default function BookingForm() {
   const [saving,        setSaving]        = useState(false)
 
   // Payment flow state
-  const [step,          setStep]          = useState('form')   // 'form' | 'payment' | 'success'
-  const [bookingKey,    setBookingKey]    = useState('')        // Firebase push key
+  const [step,          setStep]          = useState('form')
   const [transactionID, setTransactionID] = useState('')
   const [bookingRef,    setBookingRef]    = useState('')
+
+  // ── Hold booking data in memory until payment is done ──
+  const [pendingBookingData, setPendingBookingData] = useState(null)
 
   function handleLogout() {
     localStorage.removeItem('user')
@@ -57,7 +59,7 @@ export default function BookingForm() {
     })
   }
 
-  // ── Step 1: Submit form → create booking in Firebase with paymentStatus: 'pending' ──
+  // ── Step 1: Save details in memory only — NOT to Firebase yet ──
   async function handleConfirm(e) {
     e.preventDefault()
 
@@ -70,10 +72,11 @@ export default function BookingForm() {
     setSaving(true)
 
     try {
-      const ref_number  = '#BK-' + Math.floor(100000 + Math.random() * 900000)
-      const txnID       = 'TXN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase()
-      const now         = new Date().toISOString()
+      const ref_number = '#BK-' + Math.floor(100000 + Math.random() * 900000)
+      const txnID      = 'TXN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase()
+      const now        = new Date().toISOString()
 
+      // ── Build booking object but DON'T save to Firebase yet ──
       const bookingData = {
         ref:              ref_number,
         propertyId:       property.id,
@@ -84,15 +87,12 @@ export default function BookingForm() {
         nights,
         total,
         status:           'pending',
-
-        // Payment fields
         amount:           total,
         transactionID:    txnID,
-        paymentMethod:    '',           // filled after user picks method
-        paymentStatus:    'pending',    // pending | paid | failed
+        paymentMethod:    '',
+        paymentStatus:    'pending',
         paymentCreatedAt: now,
         paidAt:           '',
-
         renterName:       name,
         renterEmail:      email,
         renterPhone:      phone,
@@ -101,33 +101,50 @@ export default function BookingForm() {
         createdAt:        now,
       }
 
-      // Push to Firebase
-      const bookingsRef = ref(db, 'bookings')
-      const newRef      = await push(bookingsRef, bookingData)
-
-      // Update phone on user profile
-      if (user.firebaseUID && phone) {
-        await update(ref(db, `users/${user.firebaseUID}`), { phone })
-        const updatedUser = { ...user, phone }
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-      }
-
-      setBookingKey(newRef.key)
+      // ── Store in memory ──
+      setPendingBookingData(bookingData)
       setTransactionID(txnID)
       setBookingRef(ref_number)
       setStep('payment')
 
     } catch (err) {
       console.error(err)
-      setError('Failed to save booking. Please try again.')
+      setError('Something went wrong. Please try again.')
     }
 
     setSaving(false)
   }
 
-  // ── Called by PaymentStep when payment is confirmed ──
-  function handlePaymentSuccess() {
-    setStep('success')
+  // ── Step 2: Called by PaymentStep AFTER payment is confirmed ──
+  // NOW we save the booking to Firebase
+  async function handlePaymentSuccess(paymentMethod) {
+    try {
+      const now = new Date().toISOString()
+
+      // ── Save booking to Firebase only after payment ──
+      const finalBookingData = {
+        ...pendingBookingData,
+        paymentStatus:  'paid',
+        paymentMethod:  paymentMethod || 'ewallet',
+        paidAt:         now,
+      }
+
+      const bookingsRef = ref(db, 'bookings')
+      await push(bookingsRef, finalBookingData)
+
+      // ── Update phone number on user profile ──
+      if (user.firebaseUID && phone) {
+        await update(ref(db, `users/${user.firebaseUID}`), { phone })
+        const updatedUser = { ...user, phone }
+        localStorage.setItem('user', JSON.stringify(updatedUser))
+      }
+
+      setStep('success')
+
+    } catch (err) {
+      console.error(err)
+      alert('Payment was received but booking could not be saved. Please contact support.')
+    }
   }
 
   const Nav = () => (
@@ -159,10 +176,16 @@ export default function BookingForm() {
               Transaction: {transactionID}
             </div>
             <div className="bf-success-btns">
-              <button className="bf-btn-primary" onClick={() => navigate('/renter/bookings')}>
+              <button
+                className="bf-btn-primary"
+                onClick={() => navigate('/renter/bookings')}
+              >
                 View my bookings
               </button>
-              <button className="bf-btn-outline" onClick={() => navigate('/renter/browse')}>
+              <button
+                className="bf-btn-outline"
+                onClick={() => navigate('/renter/browse')}
+              >
                 Browse more places
               </button>
             </div>
@@ -179,7 +202,6 @@ export default function BookingForm() {
         <Nav />
         <div className="bf-content">
           <PaymentStep
-            bookingKey={bookingKey}
             transactionID={transactionID}
             bookingRef={bookingRef}
             property={property}

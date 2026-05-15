@@ -23,13 +23,11 @@ export default function PropertyDetail() {
       return
     }
 
-    // Listen to this specific property from Firebase
     const propertyRef = ref(db, `properties/${id}`)
 
     const unsubscribe = onValue(propertyRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val()
-
         setProperty({
           id,
           title:       data.title       || '',
@@ -45,7 +43,6 @@ export default function PropertyDetail() {
       } else {
         setNotFound(true)
       }
-
       setLoading(false)
     })
 
@@ -58,19 +55,23 @@ export default function PropertyDetail() {
     navigate('/')
   }
 
+  const NavBar = () => (
+    <nav className="pd-nav">
+      <span className="pd-logo">RentAPlace</span>
+      <div className="pd-nav-links">
+        <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
+        <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
+        <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+        <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
+      </div>
+    </nav>
+  )
+
   // ── Loading state ──
   if (loading) {
     return (
       <div className="pd-page">
-        <nav className="pd-nav">
-          <span className="pd-logo">RentAPlace</span>
-          <div className="pd-nav-links">
-            <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
-            <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
-            <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
-            <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
-          </div>
-        </nav>
+        <NavBar />
         <div className="pd-content">
           <div className="pd-hero" style={{ opacity: 0.4 }}>🏠</div>
           <p style={{ textAlign: 'center', color: '#6b9e84', marginTop: '1rem' }}>
@@ -85,15 +86,7 @@ export default function PropertyDetail() {
   if (notFound || !property) {
     return (
       <div className="pd-page">
-        <nav className="pd-nav">
-          <span className="pd-logo">RentAPlace</span>
-          <div className="pd-nav-links">
-            <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
-            <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
-            <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
-            <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
-          </div>
-        </nav>
+        <NavBar />
         <div className="pd-content">
           <p className="pd-not-found">
             Property not found.{' '}
@@ -109,16 +102,7 @@ export default function PropertyDetail() {
   // ── Property found ──
   return (
     <div className="pd-page">
-      <nav className="pd-nav">
-        <span className="pd-logo">RentAPlace</span>
-        <div className="pd-nav-links">
-          <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
-          <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
-          <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
-          <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
-        </div>
-      </nav>
-
+      <NavBar />
       <div className="pd-content">
 
         <div className="pd-hero">🏠</div>
@@ -160,8 +144,11 @@ export default function PropertyDetail() {
 
 function BookingPanel({ property }) {
   const navigate = useNavigate()
-  const [checkIn,  setCheckIn]  = useState('')
-  const [checkOut, setCheckOut] = useState('')
+  const [checkIn,     setCheckIn]     = useState('')
+  const [checkOut,    setCheckOut]    = useState('')
+  const [bookedDates, setBookedDates] = useState([])
+  const [conflict,    setConflict]    = useState(false)
+  const [nextAvailable, setNextAvailable] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -171,9 +158,76 @@ function BookingPanel({ property }) {
 
   const total = nights > 0 ? Number(property.price) * nights : 0
 
+  // ── Load existing paid bookings for this property ──
+  useEffect(() => {
+    const bookingsRef = ref(db, 'bookings')
+
+    const unsubscribe = onValue(bookingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val()
+
+        // Only block dates for paid bookings
+        const propertyBookings = Object.values(data).filter(b =>
+          b.propertyId === property.id &&
+          b.paymentStatus === 'paid' &&
+          b.status !== 'cancelled'
+        )
+
+        setBookedDates(propertyBookings)
+
+        // Find the next available date after all booked periods
+        if (propertyBookings.length > 0) {
+          const latestCheckOut = propertyBookings.reduce((latest, b) => {
+            const checkOut = new Date(b.checkOut)
+            return checkOut > latest ? checkOut : latest
+          }, new Date(0))
+
+          const nextDay = new Date(latestCheckOut)
+          nextDay.setDate(nextDay.getDate() + 1)
+
+          if (nextDay > new Date()) {
+            setNextAvailable(nextDay.toISOString().split('T')[0])
+          }
+        }
+      }
+    })
+
+    return () => unsubscribe()
+  }, [property.id])
+
+  // ── Check if selected dates conflict ──
+  function hasConflict(checkInDate, checkOutDate) {
+    if (!checkInDate || !checkOutDate) return false
+    const newStart = new Date(checkInDate)
+    const newEnd   = new Date(checkOutDate)
+
+    return bookedDates.some(booking => {
+      const existStart = new Date(booking.checkIn)
+      const existEnd   = new Date(booking.checkOut)
+      return newStart < existEnd && newEnd > existStart
+    })
+  }
+
+  function handleCheckInChange(e) {
+    const newCheckIn = e.target.value
+    setCheckIn(newCheckIn)
+    setCheckOut('')
+    setConflict(false)
+  }
+
+  function handleCheckOutChange(e) {
+    const newCheckOut = e.target.value
+    setCheckOut(newCheckOut)
+    setConflict(hasConflict(checkIn, newCheckOut))
+  }
+
   function handleBookNow() {
     if (!checkIn || !checkOut || nights <= 0) {
       alert('Please select valid check-in and check-out dates.')
+      return
+    }
+    if (conflict) {
+      alert('These dates are already booked. Please choose different dates.')
       return
     }
     navigate(`/renter/book/${property.id}`, {
@@ -186,12 +240,24 @@ function BookingPanel({ property }) {
       <p className="pd-price-big">₱{Number(property.price).toLocaleString()}</p>
       <p className="pd-per">per night</p>
 
+      {/* Show next available date if property has bookings */}
+      {nextAvailable && nextAvailable > today && (
+        <div className="pd-available-notice">
+          📅 Next available from{' '}
+          <strong>
+            {new Date(nextAvailable).toLocaleDateString('en-PH', {
+              month: 'long', day: 'numeric', year: 'numeric'
+            })}
+          </strong>
+        </div>
+      )}
+
       <label>Check-in</label>
       <input
         type="date"
         value={checkIn}
         min={today}
-        onChange={e => setCheckIn(e.target.value)}
+        onChange={handleCheckInChange}
       />
 
       <label>Check-out</label>
@@ -199,8 +265,25 @@ function BookingPanel({ property }) {
         type="date"
         value={checkOut}
         min={checkIn || today}
-        onChange={e => setCheckOut(e.target.value)}
+        onChange={handleCheckOutChange}
       />
+
+      {/* Conflict warning */}
+      {conflict && (
+        <div className="pd-conflict">
+          ❌ These dates are already booked!
+          {nextAvailable && (
+            <span>
+              {' '}Try dates from{' '}
+              <strong>
+                {new Date(nextAvailable).toLocaleDateString('en-PH', {
+                  month: 'short', day: 'numeric', year: 'numeric'
+                })}
+              </strong>
+            </span>
+          )}
+        </div>
+      )}
 
       <hr className="pd-divider" />
 
@@ -220,9 +303,18 @@ function BookingPanel({ property }) {
         <span>{total > 0 ? '₱' + total.toLocaleString() : '—'}</span>
       </div>
 
-      <button className="pd-book-btn" onClick={handleBookNow}>
-        Book now →
+      <button
+        className="pd-book-btn"
+        onClick={handleBookNow}
+        disabled={conflict || nights <= 0}
+        style={{
+          opacity: conflict ? 0.5 : 1,
+          cursor:  conflict ? 'not-allowed' : 'pointer'
+        }}
+      >
+        {conflict ? '❌ Dates unavailable' : 'Book now →'}
       </button>
+
     </div>
   )
 }

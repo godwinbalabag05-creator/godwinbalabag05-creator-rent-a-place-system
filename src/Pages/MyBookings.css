@@ -159,3 +159,20 @@
   .mb-content { padding: 16px 12px; }
   .mb-card-dates { flex-direction: column; gap: 4px; }
 }
+
+/* Completed stat */
+.mb-stat-num.completed { color: #534AB7; }
+
+/* Completed badge */
+.mb-badge.completed { background: #EEEDFE; color: #3C3489; }
+
+/* Completed tag */
+.mb-completed-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #534AB7;
+  background: #EEEDFE;
+  padding: 4px 10px;
+  border-radius: 30px;
+  -webkit-font-smoothing: antialiased;
+}
