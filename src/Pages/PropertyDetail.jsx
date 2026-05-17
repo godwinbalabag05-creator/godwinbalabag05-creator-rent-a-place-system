@@ -62,6 +62,7 @@ export default function PropertyDetail() {
         <button className="pd-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
         <button className="pd-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
         <button className="pd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+        <button className="pd-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
         <button className="pd-nav-btn logout" onClick={handleLogout}>Logout</button>
       </div>
     </nav>

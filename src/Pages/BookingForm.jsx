@@ -154,6 +154,7 @@ export default function BookingForm() {
         <button className="bf-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
         <button className="bf-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
         <button className="bf-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+        <button className="bf-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
         <button className="bf-nav-btn logout" onClick={handleLogout}>Logout</button>
       </div>
     </nav>

@@ -130,6 +130,7 @@ export default function MyBookings() {
           <button className="mb-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
           <button className="mb-nav-btn" onClick={() => navigate('/renter/browse')}>Browse</button>
           <button className="mb-nav-btn active">My bookings</button>
+          <button className="mb-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
           <button className="mb-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

@@ -12,7 +12,7 @@ import AdminListings from './Pages/AdminListings'
 import AdminBookings from './Pages/AdminBookings'
 import AdminUsers from './Pages/AdminUsers'
 import PayPage from './Pages/PayPage'
-
+import ProfilePage from './Pages/ProfilePage'
 
 
 
@@ -46,6 +46,8 @@ function App() {
         <Route path="/admin/bookings" element={<AdminBookings />} />
 
         <Route path="/admin/users" element={<AdminUsers />} />
+
+        <Route path="/renter/profile" element={<ProfilePage />} />
 
 
       </Routes>

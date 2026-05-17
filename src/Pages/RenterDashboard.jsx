@@ -127,6 +127,7 @@ export default function RenterDashboard() {
           <button className="rd-nav-btn active">Dashboard</button>
           <button className="rd-nav-btn" onClick={() => navigate('/renter/browse')}>Browse</button>
           <button className="rd-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+          <button className="rd-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
           <button className="rd-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
@@ -246,11 +247,11 @@ export default function RenterDashboard() {
             <p className="rd-quick-label">My bookings</p>
             <p className="rd-quick-sub">View all your bookings</p>
           </div>
-          <div className="rd-quick-card">
-            <div className="rd-quick-icon">👤</div>
-            <p className="rd-quick-label">My profile</p>
-            <p className="rd-quick-sub">View your account details</p>
-          </div>
+            <div className="rd-quick-card" onClick={() => navigate('/renter/profile')}>
+              <div className="rd-quick-icon">👤</div>
+              <p className="rd-quick-label">My profile</p>
+              <p className="rd-quick-sub">View your account details</p>
+            </div>
         </div>
 
       </div>

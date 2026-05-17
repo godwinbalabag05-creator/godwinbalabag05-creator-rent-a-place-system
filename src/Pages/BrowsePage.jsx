@@ -83,6 +83,7 @@ export default function BrowsePage() {
           <button className="bp-nav-btn" onClick={() => navigate('/renter/dashboard')}>Dashboard</button>
           <button className="bp-nav-btn active">Browse</button>
           <button className="bp-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
+          <button className="bp-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
           <button className="bp-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
