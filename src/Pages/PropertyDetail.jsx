@@ -268,7 +268,7 @@ function BookingPanel({ property }) {
         min={checkIn || today}
         onChange={handleCheckOutChange}
       />
-
+  
       {/* Conflict warning */}
       {conflict && (
         <div className="pd-conflict">

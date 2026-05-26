@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
 import './PaymentStep.css'
 
-const PAYMENT_HOST = 'http://192.168.1.10:5173'
+const PAYMENT_HOST = 'https://godwinbalabag05-creator-rent-a-plac.vercel.app/'
 
 export default function PaymentStep({
   transactionID,
