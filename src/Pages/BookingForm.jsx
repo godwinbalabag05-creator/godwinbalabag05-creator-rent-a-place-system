@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import './BookingForm.css'
 import useAuthGuard from '../hooks/useAuthGuard'
@@ -118,34 +118,44 @@ async function handleConfirm(e) {
   setSaving(false)
 }
 
-// ── Step 2: Called by PaymentStep AFTER "I've completed payment" is clicked ──
-// Update the existing Firebase booking to paymentStatus: 'paid'
 async function handlePaymentSuccess(paymentMethod) {
   try {
     const now = new Date().toISOString()
 
-    // ── Update the existing booking in Firebase ──
-    await update(
-      ref(db, `bookings/${pendingBookingData.firebaseKey}`),
-      {
-        paymentStatus: 'paid',
-        paymentMethod: paymentMethod || 'ewallet',
-        paidAt:        now,
-      }
-    )
+    // Only update Firebase if payment was done via button click
+    // If QR was scanned, PayPage already updated Firebase — skip the update
+    if (pendingBookingData?.firebaseKey && paymentMethod) {
+      const currentBookingRef = ref(db, `bookings/${pendingBookingData.firebaseKey}`)
 
-    // ── Update phone number on user profile ──
+      // Check current paymentStatus first — don't double update
+      const { get } = await import('firebase/database')
+      const snapshot = await get(currentBookingRef)
+      const currentData = snapshot.val()
+
+      // Only update if not already paid by QR scan
+      if (currentData && currentData.paymentStatus !== 'paid') {
+        await update(currentBookingRef, {
+          paymentStatus: 'paid',
+          paymentMethod: paymentMethod || 'ewallet',
+          paidAt:        now,
+        })
+      }
+    }
+
+    // Update phone number on user profile
     if (user.firebaseUID && phone) {
       await update(ref(db, `users/${user.firebaseUID}`), { phone })
       const updatedUser = { ...user, phone }
       localStorage.setItem('user', JSON.stringify(updatedUser))
     }
 
+    // Always go to success screen
     setStep('success')
 
   } catch (err) {
     console.error(err)
-    alert('Payment was received but booking could not be updated. Please contact support.')
+    // Even if update fails, still show success since payment went through
+    setStep('success')
   }
 }
 
@@ -205,6 +215,7 @@ async function handlePaymentSuccess(paymentMethod) {
         <Nav />
         <div className="bf-content">
           <PaymentStep
+            firebaseKey={pendingBookingData?.firebaseKey}
             transactionID={transactionID}
             bookingRef={bookingRef}
             property={property}

@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { QRCode } from 'react-qr-code'
 import './PaymentStep.css'
+import { db } from '../Firebase'
+import { ref, onValue } from 'firebase/database'
 
-const PAYMENT_HOST = 'https://godwinbalabag05-creator-rent-a-plac.vercel.app/'
+const PAYMENT_HOST = 'https://godwinbalabag05-creator-rent-a-plac.vercel.app'
 
 export default function PaymentStep({
+  firebaseKey,
   transactionID,
   bookingRef,
   property,
@@ -24,6 +27,38 @@ export default function PaymentStep({
   const [error,    setError]    = useState('')
 
   const paymentLink = `${PAYMENT_HOST}/pay/${transactionID}`
+
+ useEffect(() => {
+  if (method !== 'ewallet') return
+
+  const bookingsRef = ref(db, 'bookings')
+
+  const unsubscribe = onValue(bookingsRef, (snapshot) => {
+    if (!snapshot.exists()) return
+
+    snapshot.forEach(child => {
+      const data = child.val()
+
+      console.log(
+        'LISTENING:',
+        data.transactionID,
+        data.paymentStatus
+      )
+
+      if (
+        data.transactionID === transactionID &&
+        data.paymentStatus === 'paid'
+      ) {
+        console.log('PAYMENT DETECTED')
+
+        onSuccess('ewallet')
+      }
+    })
+  })
+
+  return () => unsubscribe()
+
+}, [method, transactionID, onSuccess])
 
   function formatDate(d) {
     return new Date(d).toLocaleDateString('en-PH', {
@@ -219,6 +254,7 @@ export default function PaymentStep({
   // ── E-wallet / QR ──
   if (method === 'ewallet') {
     return (
+      
       <div className="ps-wrap">
         <div className="ps-stepper">
           <div className="ps-step done">1 Details</div>
