@@ -17,6 +17,7 @@ export default function PaymentStep({
   total,
   renterName,
   onSuccess,
+  onCardBack,
 }) {
   const [method,   setMethod]   = useState('')
   const [cardNum,  setCardNum]  = useState('')
@@ -164,7 +165,14 @@ export default function PaymentStep({
         <div className="ps-grid">
           <div className="ps-card">
             <div className="ps-method-header">
-              <button className="ps-back" onClick={() => setMethod('')}>← Back</button>
+              <button
+              className="ps-back"
+              onClick={async () => {
+                await onCardBack()
+              }}
+            >
+              ← Back
+            </button> 
               <p className="bf-section-label" style={{ margin: 0 }}>Card details</p>
             </div>
 
@@ -267,7 +275,14 @@ export default function PaymentStep({
         <div className="ps-grid">
           <div className="ps-card">
             <div className="ps-method-header">
-              <button className="ps-back" onClick={() => setMethod('')}>← Back</button>
+              <button
+                className="ps-back"
+                onClick={async () => {
+                  await onCardBack()
+                }}
+              >
+                ← Back
+              </button>
               <p className="bf-section-label" style={{ margin: 0 }}>Scan to pay</p>
             </div>
 

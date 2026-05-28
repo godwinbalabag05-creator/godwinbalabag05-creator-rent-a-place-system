@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import './BookingForm.css'
 import useAuthGuard from '../hooks/useAuthGuard'
 import { db, auth } from '../Firebase'
-import { ref, push, update } from 'firebase/database'
+import { ref, push, update, remove } from 'firebase/database'
 import PaymentStep from './PaymentStep'
 
 export default function BookingForm() {
@@ -159,6 +159,25 @@ async function handlePaymentSuccess(paymentMethod) {
   }
 }
 
+async function handleCardBack() {
+  try {
+    // delete pending unpaid booking
+    if (pendingBookingData?.firebaseKey) {
+      const bookingRef = ref(db, `bookings/${pendingBookingData.firebaseKey}`)
+      await remove(bookingRef)
+    }
+
+    // reset states
+    setPendingBookingData(null)
+    setTransactionID('')
+    setBookingRef('')
+    setStep('form')
+
+  } catch (err) {
+    console.error(err)
+  }
+}
+
   const Nav = () => (
     <nav className="bf-nav">
       <span className="bf-logo">RentAPlace</span>
@@ -215,6 +234,7 @@ async function handlePaymentSuccess(paymentMethod) {
         <Nav />
         <div className="bf-content">
           <PaymentStep
+            onCardBack={handleCardBack}
             firebaseKey={pendingBookingData?.firebaseKey}
             transactionID={transactionID}
             bookingRef={bookingRef}
