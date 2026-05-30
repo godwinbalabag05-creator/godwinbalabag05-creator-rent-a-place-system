@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AdminBookings.css'
 import useAuthGuard from '../hooks/useAuthGuard'
-
+import NotificationBell from '../components/NotificationBell'
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
 
@@ -92,26 +92,61 @@ export default function AdminBookings() {
   }
 
   async function handleApprove(bookingId) {
-    try {
-      await update(ref(db, `bookings/${bookingId}`), {
-        status: 'approved'
-      })
-    } catch (error) {
-      console.log(error)
-      alert('Failed to approve booking.')
-    }
-  }
+  try {
+    await update(ref(db, `bookings/${bookingId}`), { status: 'approved' })
 
-  async function handleCancel(bookingId) {
-    try {
-      await update(ref(db, `bookings/${bookingId}`), {
-        status: 'cancelled'
+    // Notify renter
+    const booking = bookings.find(b => b.id === bookingId)
+    if (booking?.renterUID) {
+      const { push: fbPush, ref: fbRef } = await import('firebase/database')
+      fbPush(fbRef(db, `notifications/${booking.renterUID}`), {
+        type:      'approved',
+        title:     'Booking approved!',
+        message:   `Your booking for ${booking.propertyTitle} has been approved.`,
+        isRead:    false,
+        createdAt: new Date().toISOString(),
       })
-    } catch (error) {
-      console.log(error)
-      alert('Failed to cancel booking.')
     }
+
+    // Notify admin
+    const adminUID = user.firebaseUID
+    if (adminUID) {
+      const { push: fbPush, ref: fbRef } = await import('firebase/database')
+      fbPush(fbRef(db, `notifications/${adminUID}`), {
+        type:      'approved',
+        title:     'Booking approved',
+        message:   `You approved ${booking?.renterName}'s booking for ${booking?.propertyTitle}.`,
+        isRead:    false,
+        createdAt: new Date().toISOString(),
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    alert('Failed to approve booking.')
   }
+}
+
+async function handleCancel(bookingId) {
+  try {
+    await update(ref(db, `bookings/${bookingId}`), { status: 'cancelled' })
+
+    // Notify renter
+    const booking = bookings.find(b => b.id === bookingId)
+    if (booking?.renterUID) {
+      const { push: fbPush, ref: fbRef } = await import('firebase/database')
+      fbPush(fbRef(db, `notifications/${booking.renterUID}`), {
+        type:      'cancelled',
+        title:     'Booking cancelled',
+        message:   `Your booking for ${booking.propertyTitle} has been cancelled by the admin.`,
+        isRead:    false,
+        createdAt: new Date().toISOString(),
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    alert('Failed to cancel booking.')
+  }
+}
 
   function formatDate(d) {
     return new Date(d).toLocaleDateString('en-PH', {
@@ -136,6 +171,7 @@ export default function AdminBookings() {
           <button className="ab-nav-btn" onClick={() => navigate('/admin/listings')}>Listings</button>
           <button className="ab-nav-btn active">Bookings</button>
           <button className="ab-nav-btn" onClick={() => navigate('/admin/users')}>Users</button>
+          <NotificationBell userUID={user.firebaseUID} isAdmin={true} />
           <button className="ab-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './BrowsePage.css'
 import useAuthGuard from '../hooks/useAuthGuard'
+import NotificationBell from '../components/NotificationBell'
 
 
 import { db, auth } from '../Firebase'
@@ -84,6 +85,7 @@ export default function BrowsePage() {
           <button className="bp-nav-btn active">Browse</button>
           <button className="bp-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
           <button className="bp-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
+          <NotificationBell userUID={user.firebaseUID} isAdmin={false} />
           <button className="bp-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

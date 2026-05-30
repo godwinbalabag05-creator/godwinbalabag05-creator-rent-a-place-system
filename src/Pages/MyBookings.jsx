@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './MyBookings.css'
 import useAuthGuard from '../hooks/useAuthGuard'
+import NotificationBell from '../components/NotificationBell'
 
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
@@ -131,6 +132,7 @@ export default function MyBookings() {
           <button className="mb-nav-btn" onClick={() => navigate('/renter/browse')}>Browse</button>
           <button className="mb-nav-btn active">My bookings</button>
           <button className="mb-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
+          <NotificationBell userUID={user.firebaseUID} isAdmin={false} />
           <button className="mb-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

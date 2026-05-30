@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import './LandingPage.css'
+import { push } from 'firebase/database'
 
 import { db } from '../Firebase'
 import { auth } from '../Firebase'
@@ -37,6 +38,11 @@ export default function LandingPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [suspended,      setSuspended]      = useState(false)
+  const [suspendedEmail, setSuspendedEmail] = useState('')
+  const [appealMessage,  setAppealMessage]  = useState('')
+  const [appealSent,     setAppealSent]     = useState(false)
+  const [appealSending,  setAppealSending]  = useState(false)
 
   const navigate = useNavigate()
 
@@ -71,11 +77,12 @@ export default function LandingPage() {
       const userData = snapshot.val()
 
       // ── ADD THIS CHECK ──
-      if (userData.status === 'suspended') {
-        setError('Your account has been suspended. Please contact the admin.')
-        setLoading(false)
-        return
-      }
+          if (userData.status === 'suspended') {
+      setSuspended(true)
+      setSuspendedEmail(loginData.email)
+      setLoading(false)
+      return
+}
       // ── END OF CHECK ──
 
       // Save user locally
@@ -182,9 +189,108 @@ export default function LandingPage() {
     setLoading(false)
   }
 
+  async function handleAppeal(e) {
+  e.preventDefault()
+  if (!appealMessage.trim()) return
+
+  setAppealSending(true)
+  try {
+    await push(ref(db, 'appeals'), {
+      email:     suspendedEmail,
+      message:   appealMessage,
+      status:    'pending',
+      createdAt: new Date().toISOString(),
+    })
+    setAppealSent(true)
+  } catch (err) {
+    console.log(err)
+    alert('Failed to submit appeal. Please try again.')
+  }
+  setAppealSending(false)
+}
+
+if (suspended) {
   return (
     <div className="lp-page">
       <div className="lp-card">
+
+        {appealSent ? (
+          <>
+            <div className="lp-susp-icon">✅</div>
+            <h2 className="lp-susp-title">Appeal submitted!</h2>
+            <p className="lp-susp-sub">
+              Your appeal has been sent to the admin. Please wait for their response.
+            </p>
+
+            <button
+              className="lp-submit"
+              onClick={() => {
+                setSuspended(false)
+                setAppealSent(false)
+                setAppealMessage('')
+              }}
+            >
+              ← Back to login
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="lp-susp-icon">🔒</div>
+            <h2 className="lp-susp-title">Account suspended</h2>
+            <p className="lp-susp-sub">
+              Your account has been suspended. You may submit an appeal to the admin for review.
+            </p>
+
+            <form onSubmit={handleAppeal}>
+              <label>Your email address</label>
+
+              <input
+                type="email"
+                value={suspendedEmail}
+                disabled
+              />
+
+              <label>Reason for appeal</label>
+
+              <textarea
+                placeholder="Explain why you think your account should be restored..."
+                value={appealMessage}
+                onChange={e => setAppealMessage(e.target.value)}
+                rows={4}
+                style={{ borderRadius: '12px', resize: 'vertical' }}
+              />
+
+              <button
+                type="submit"
+                className="lp-submit"
+                disabled={appealSending || !appealMessage.trim()}
+              >
+                {appealSending ? 'Submitting...' : 'Submit appeal'}
+              </button>
+            </form>
+
+            <button
+              className="lp-susp-back"
+              onClick={() => setSuspended(false)}
+            >
+              ← Back to login
+            </button>
+
+            <p className="lp-hint">
+              The admin will review your appeal and respond accordingly.
+            </p>
+          </>
+        )}
+
+      </div>
+    </div>
+  )
+}
+  return (
+    <div className="lp-page">
+      <div className="lp-card">
+
+        
 
         <div className="lp-logo">
           <div className="lp-logo-icon">

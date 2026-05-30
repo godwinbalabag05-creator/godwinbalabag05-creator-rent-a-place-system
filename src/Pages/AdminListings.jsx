@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './AdminListings.css'
 import useAuthGuard from '../hooks/useAuthGuard'
+import NotificationBell from '../components/NotificationBell'
+
 
 import { db, auth } from '../Firebase'
 import { ref, onValue, push, update, remove } from 'firebase/database'
@@ -158,6 +160,7 @@ export default function AdminListings() {
           <button className="al-nav-btn active">Listings</button>
           <button className="al-nav-btn" onClick={() => navigate('/admin/bookings')}>Bookings</button>
           <button className="al-nav-btn" onClick={() => navigate('/admin/users')}>Users</button>
+          <NotificationBell userUID={user.firebaseUID} isAdmin={true} />  
           <button className="al-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

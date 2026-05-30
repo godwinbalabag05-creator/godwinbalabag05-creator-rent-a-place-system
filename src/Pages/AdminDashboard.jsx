@@ -6,6 +6,8 @@ import useAuthGuard from '../hooks/useAuthGuard'
 
 import { db, auth } from '../Firebase'
 import { ref, onValue, update } from 'firebase/database'
+import NotificationBell from '../components/NotificationBell'
+
 
 export default function AdminDashboard() {
   useAuthGuard('admin')
@@ -160,6 +162,7 @@ export default function AdminDashboard() {
           <button className="ad-nav-btn" onClick={() => navigate('/admin/listings')}>Listings</button>
           <button className="ad-nav-btn" onClick={() => navigate('/admin/bookings')}>Bookings</button>
           <button className="ad-nav-btn" onClick={() => navigate('/admin/users')}>Users</button>
+          <NotificationBell userUID={user.firebaseUID} isAdmin={true} />
           <button className="ad-nav-btn logout" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

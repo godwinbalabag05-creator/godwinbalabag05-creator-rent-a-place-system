@@ -1,0 +1,101 @@
+.nb-wrap {
+  position: relative;
+}
+
+.nb-bell {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; position: relative;
+  color: #A8F0C6;
+}
+.nb-bell:hover { background: rgba(255,255,255,0.18); }
+
+.nb-badge {
+  position: absolute; top: -3px; right: -3px;
+  width: 17px; height: 17px;
+  background: #dc2626; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff;
+  border: 2px solid #0A3D2B;
+}
+
+.nb-dropdown {
+  position: absolute; right: 0; top: 46px;
+  width: 310px; background: #ffffff;
+  border: 1.5px solid #d4f0e2;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(10,61,43,0.12);
+  z-index: 999;
+  max-height: 420px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+.nb-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0faf5;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.nb-header-title {
+  font-size: 14px; font-weight: 700; color: #0A3D2B;
+}
+.nb-mark-all {
+  font-size: 12px; font-weight: 600;
+  color: #1DB974; background: none;
+  border: none; cursor: pointer; font-family: inherit;
+}
+
+.nb-list {
+  overflow-y: auto; flex: 1;
+}
+
+.nb-item {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f0faf5;
+  display: flex; gap: 10px;
+  align-items: flex-start;
+  cursor: pointer; transition: background .1s;
+}
+.nb-item:last-child { border-bottom: none; }
+.nb-item:hover { background: #f9fdfb; }
+.nb-item.unread { background: #F0FAF5; }
+.nb-item.unread:hover { background: #e8f7f0; }
+
+.nb-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center;
+  justify-content: center; font-size: 15px;
+  flex-shrink: 0;
+}
+
+.nb-body { flex: 1; min-width: 0; }
+.nb-title {
+  font-size: 13px; font-weight: 600;
+  color: #0A3D2B; margin-bottom: 2px;
+}
+.nb-sub {
+  font-size: 12px; color: #6b9e84;
+  font-weight: 500; line-height: 1.4;
+  white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nb-time {
+  font-size: 11px; color: #9ec9b0; margin-top: 3px;
+}
+
+.nb-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%; background: #1DB974;
+  flex-shrink: 0; margin-top: 4px;
+}
+
+.nb-empty {
+  padding: 2rem; text-align: center;
+  font-size: 13px; color: #6b9e84; font-weight: 500;
+}

@@ -5,6 +5,8 @@ import useAuthGuard from '../hooks/useAuthGuard'
 import { db, auth } from '../Firebase'
 import { ref, push, update, remove } from 'firebase/database'
 import PaymentStep from './PaymentStep'
+import NotificationBell from '../components/NotificationBell'
+
 
 export default function BookingForm() {
   useAuthGuard('renter')
@@ -103,6 +105,25 @@ async function handleConfirm(e) {
     // ── Save to Firebase immediately so PayPage can find it by transactionID ──
     const bookingsRef = ref(db, 'bookings')
     const newRef      = await push(bookingsRef, bookingData)
+    // Notify admin of new booking
+    const adminSnapshot = await import('firebase/database').then(({ ref: fbRef, get: fbGet }) =>
+  fbGet(fbRef(db, 'users'))
+)
+
+    adminSnapshot.forEach(child => {
+      const adminData = child.val()
+      if (adminData.role === 'admin') {
+        import('firebase/database').then(({ push: fbPush, ref: fbRef }) => {
+          fbPush(fbRef(db, `notifications/${child.key}`), {
+            type:      'pending',
+            title:     'New booking request',
+            message:   `${name} booked ${property.title} — ₱${Number(total).toLocaleString()}`,
+            isRead:    false,
+            createdAt: new Date().toISOString(),
+          })
+        })
+      }
+    })
 
     // ── Store the Firebase key so we can update it after payment ──
     setPendingBookingData({ ...bookingData, firebaseKey: newRef.key })
@@ -186,6 +207,7 @@ async function handleCardBack() {
         <button className="bf-nav-btn active" onClick={() => navigate('/renter/browse')}>Browse</button>
         <button className="bf-nav-btn" onClick={() => navigate('/renter/bookings')}>My bookings</button>
         <button className="bf-nav-btn" onClick={() => navigate('/renter/profile')}>Profile</button>
+        <NotificationBell userUID={user.firebaseUID} isAdmin={false} />
         <button className="bf-nav-btn logout" onClick={handleLogout}>Logout</button>
       </div>
     </nav>
